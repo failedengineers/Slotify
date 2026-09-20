@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1
+
+Documentation and packaging improvements:
+
+- Expanded README and user documentation.
+- Added Django and Django REST Framework integration examples.
+- Added timezone and DST guidance.
+- Added recipes and API overview.
+- Added project metadata for PyPI discovery.
+- Added GitHub Actions test, documentation, and PyPI release workflows.
+- Added issue and pull-request templates.
+
 ## 0.1.0
 
 Initial public release.
