@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slotify-scheduling"
-version = "0.1.1"
+version = "0.1.2"
 description = "Timezone-aware Python scheduling and appointment slot engine for availability and booking systems."
 readme = "README.md"
 requires-python = ">=3.10"
