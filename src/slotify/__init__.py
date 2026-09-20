@@ -31,7 +31,7 @@ from .timezone import (
     to_utc,
 )
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __all__ = [
     "SlotGenerator",
     "Slot",
