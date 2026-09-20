@@ -1,18 +1,45 @@
-# Virtual environment
+# Virtual environments
 venv/
 .venv/
+env/
+ENV/
+pypi_test/
+test_env/
 
-# Environment variables
-.env
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 
-# Distribution
+# Packaging
 build/
 dist/
 *.egg-info/
+.eggs/
 
-# Logs
-*.log
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.pyright/
+
+# Linters
+.ruff_cache/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local configuration
+.env
+.env.*
