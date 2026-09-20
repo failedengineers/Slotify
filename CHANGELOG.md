@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Fixed README documentation links to point to the hosted documentation site.
+
 ## 0.1.1
 
 Documentation and packaging improvements:
