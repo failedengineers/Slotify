@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slotify-scheduling"
-version = "0.1.0"
-description = "A timezone-aware Python scheduling and appointment slot engine."
+version = "0.1.1"
+description = "Timezone-aware Python scheduling and appointment slot engine for availability and booking systems."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -14,9 +14,40 @@ authors = [
     { name = "Kalash Gulati" }
 ]
 
+keywords = [
+    "scheduling",
+    "appointment scheduling",
+    "time slots",
+    "booking",
+    "availability",
+    "timezone",
+    "daylight saving",
+    "django",
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
 dependencies = [
     "tzdata>=2022.1; platform_system == 'Windows'"
 ]
+
+[project.urls]
+Homepage = "https://github.com/failedengineers/Slotify"
+Documentation = "https://failedengineers.github.io/Slotify/"
+Repository = "https://github.com/failedengineers/Slotify"
+Issues = "https://github.com/failedengineers/Slotify/issues"
+Changelog = "https://github.com/failedengineers/Slotify/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
