@@ -2,13 +2,6 @@
 
 **Timezone-aware scheduling and appointment slot engine for Python.**
 
-Slotify helps you build appointment and booking systems without implementing scheduling logic from scratch.
-
-**Use it for:** appointment slots, provider availability, resource booking, recurring schedules, breaks, holidays, booking rules, capacity, buffers, reservations, timezones, and daylight-saving transitions.
-
-[![PyPI](https://img.shields.io/pypi/v/slotify-scheduling.svg)](https://pypi.org/project/slotify-scheduling/)
-[![Python](https://img.shields.io/pypi/pyversions/slotify-scheduling.svg)](https://pypi.org/project/slotify-scheduling/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Installation
 
@@ -125,7 +118,7 @@ Ambiguous policies: raise, earlier, later, both.
 
 Nonexistent-time policies: raise, skip.
 
-See docs/timezones.md.
+See the [Timezone & DST guide](https://failedengineers.github.io/Slotify/timezones/).
 
 ### Upcoming availability
 
@@ -290,11 +283,19 @@ Your Django/FastAPI/etc. application
 
 ## Documentation
 
+- [Documentation home](https://failedengineers.github.io/Slotify/)
 - [Getting Started](https://failedengineers.github.io/Slotify/getting-started/)
-- [Django Integration](https://failedengineers.github.io/Slotify/django/)
+- [Django / DRF](https://failedengineers.github.io/Slotify/django/)
 - [Timezone & DST](https://failedengineers.github.io/Slotify/timezones/)
 - [Recipes](https://failedengineers.github.io/Slotify/recipes/)
 - [API Guide](https://failedengineers.github.io/Slotify/api/)
+
+## Community
+
+- [Contributing](CONTRIBUTING.md)
+- [Roadmap](ROADMAP.md)
+- [Support](SUPPORT.md)
+- [Security](SECURITY.md)
 
 ## Requirements
 
@@ -306,7 +307,7 @@ Your Django/FastAPI/etc. application
 
 Current version: **0.1.2**
 
-Slotify is actively developed and the API may evolve before 1.0.0.
+Slotify is currently in alpha. The API may evolve before 1.0.0, so pin the version in production applications and review the changelog when upgrading.
 
 ## License
 
