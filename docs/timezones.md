@@ -1,6 +1,8 @@
 # Timezones & DST
 
-Slotify accepts IANA timezone names.
+Scheduling should be defined in the timezone of the resource being scheduled.
+
+## Use IANA timezone names
 
 ~~~python
 from slotify import SlotGenerator
@@ -13,13 +15,31 @@ generator = SlotGenerator(
 )
 ~~~
 
-## Why the timezone matters
+Examples of IANA names include:
 
-A schedule defined as 09:00–17:00 is local to the resource's timezone. Two resources in different regions can therefore use the same scheduling model with different timezone values.
+~~~text
+Asia/Kolkata
+America/New_York
+Europe/London
+Australia/Sydney
+UTC
+~~~
 
-## DST behavior
+## Why this matters
 
-During a daylight-saving transition, a local clock time can be ambiguous or nonexistent.
+A provider working 09:00–17:00 in India should not suddenly become a 09:00–17:00 schedule in the server's timezone just because the application server moved.
+
+Store the resource timezone and pass it to Slotify.
+
+## DST transitions
+
+During daylight-saving transitions, local clock times can be:
+
+- normal
+- ambiguous because a clock repeats an interval
+- nonexistent because a clock skips an interval
+
+Slotify lets you choose how those cases are handled.
 
 ~~~python
 generator = SlotGenerator(
@@ -32,7 +52,7 @@ generator = SlotGenerator(
 )
 ~~~
 
-Ambiguous policies:
+Ambiguous-time policies:
 
 ~~~text
 raise
@@ -48,15 +68,31 @@ raise
 skip
 ~~~
 
-## Deterministic tests
+## Testing DST behavior
+
+Use explicit dates and times in tests:
+
+~~~python
+slots = generator.generate_for_date("2026-11-01")
+~~~
+
+For rolling availability:
 
 ~~~python
 from datetime import datetime
 
 slots = generator.upcoming(
     7,
-    now=datetime.fromisoformat("2026-09-21T08:00:00-04:00"),
+    now=datetime.fromisoformat(
+        "2026-09-21T08:00:00-04:00"
+    ),
 )
 ~~~
 
-For production systems, store the resource timezone explicitly and test DST transitions for every supported region.
+Passing `now` makes tests deterministic.
+
+## Windows
+
+On Windows, Slotify declares `tzdata` as a runtime dependency automatically.
+
+For production systems, test the timezones your application actually supports.
