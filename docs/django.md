@@ -1,6 +1,6 @@
 # Django Integration
 
-Slotify works well as a scheduling layer inside Django. It does not need to be added to INSTALLED_APPS.
+Slotify works as a scheduling layer inside Django and Django REST Framework. It does not need to be added to `INSTALLED_APPS`.
 
 ## Install
 
@@ -8,7 +8,7 @@ Slotify works well as a scheduling layer inside Django. It does not need to be a
 pip install slotify-scheduling
 ~~~
 
-## Example provider model
+## Example model
 
 ~~~python
 from django.db import models
@@ -18,8 +18,13 @@ class Provider(models.Model):
     work_start = models.TimeField()
     work_end = models.TimeField()
     slot_duration = models.PositiveIntegerField(default=30)
-    timezone = models.CharField(max_length=64, default="Asia/Kolkata")
+    timezone = models.CharField(
+        max_length=64,
+        default="Asia/Kolkata",
+    )
 ~~~
+
+Your database remains the source of truth for provider/application data.
 
 ## Service layer
 
@@ -41,7 +46,9 @@ def get_provider_engine(provider):
     )
 ~~~
 
-## JSON endpoint
+Keeping this in a service module prevents scheduling code from being duplicated across views.
+
+## Django JSON endpoint
 
 ~~~python
 from django.http import JsonResponse
@@ -73,6 +80,7 @@ class ProviderAvailabilityView(APIView):
     def get(self, request, provider_id):
         provider = Provider.objects.get(pk=provider_id)
         engine = get_provider_engine(provider)
+
         slots = engine.available_slots("2026-09-21")
 
         return Response({
@@ -81,44 +89,49 @@ class ProviderAvailabilityView(APIView):
         })
 ~~~
 
-## Booking
+## Booking workflow
 
-For a test or single-process application:
-
-~~~python
-available = engine.available_slots("2026-09-21")
-
-if available:
-    booking = engine.reserve(available[0])
-~~~
-
-For multi-worker production systems, do not rely on in-memory booking state as the shared source of truth.
-
-Implement BookingStore against your transactional storage and make the application-level booking operation safe under concurrent requests.
-
-## Real appointment architecture
+A real application commonly looks like:
 
 ~~~text
-Browser / Mobile App
-        |
-        v
+Frontend
+   |
+   v
 Django / DRF
-        |
-        v
-Provider + application DB
-        |
-        v
-Slotify availability
-        |
-        v
-User selects slot
-        |
-        v
-Transactional booking workflow
-        |
-        +--> Payment
-        |
-        +--> Notification
+   |
+   +--> authenticate user
+   |
+   +--> load provider/resource
+   |
+   +--> ask Slotify for availability
+   |
+   +--> user selects a slot
+   |
+   +--> application booking transaction
+   |
+   +--> payment (if required)
+   |
+   +--> notification
 ~~~
 
-Slotify focuses on scheduling. Django remains responsible for authentication, permissions, persistence, payments, and application-specific workflows.
+Slotify handles scheduling concerns. Django remains responsible for application concerns.
+
+## Production storage
+
+The built-in `InMemoryBookingStore` is useful for tests and simple single-process applications.
+
+For multi-worker or distributed Django deployments, implement/use a `BookingStore` backed by your transactional database and make the application-level reservation workflow safe under concurrent requests.
+
+Do not use in-memory state as the shared source of truth across multiple workers.
+
+## A useful provider pattern
+
+Store the provider's timezone explicitly rather than assuming the server timezone:
+
+~~~python
+Provider(
+    timezone="Asia/Kolkata",
+)
+~~~
+
+Then pass that timezone into `SlotGenerator`.
