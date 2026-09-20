@@ -47,6 +47,33 @@ Slotify keeps those rules in a scheduling layer while your application remains r
 - Rooms, equipment, staff, and other resource booking
 - Availability APIs in Django, FastAPI, Flask, or other Python applications
 
+
+## Why use Slotify?
+
+Scheduling logic becomes complicated quickly when a system needs recurring availability, breaks, holidays, timezone conversion, daylight-saving transitions, booking limits, capacity, and conflicts.
+
+Slotify focuses on that scheduling layer so your application can keep ownership of users, authentication, payments, notifications, and your database.
+
+### Good fit
+
+- Appointment and booking APIs
+- Django / Django REST Framework backends
+- Doctor, therapist, consultant, and coach availability
+- Classes, meetings, interviews, rooms, and shared resources
+- Applications that need explicit timezone and DST behavior
+
+### Not a full booking platform
+
+Slotify is a Python library, not a hosted booking service or complete frontend. You bring your application's users, database, authentication, payments, notifications, and UI.
+
+## Quick links
+
+- **[Documentation](https://failedengineers.github.io/Slotify/)** — guides, Django integration, recipes, and API reference
+- **[PyPI](https://pypi.org/project/slotify-scheduling/)** — install the package
+- **[Examples](https://github.com/failedengineers/Slotify/tree/main/examples)** — runnable starting points
+- **[Issues](https://github.com/failedengineers/Slotify/issues)** — bugs and feature requests
+- **[Roadmap](ROADMAP.md)** — current project direction
+
 ## Features
 
 ### Weekly schedules
