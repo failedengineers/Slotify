@@ -1,12 +1,10 @@
 # API Guide
 
-This is the user-facing map of the public API.
+This page is a map of Slotify's public API. For exact signatures, the installed package version is the source of truth.
 
 ## SlotGenerator
 
-Turns scheduling rules into appointment slots.
-
-Common operations:
+Creates timezone-aware slots from scheduling rules.
 
 ~~~text
 generate()
@@ -14,9 +12,25 @@ generate_for_date()
 upcoming()
 ~~~
 
+Configuration includes:
+
+~~~text
+start / end
+windows
+schedule
+duration
+interval
+timezone
+weekdays
+breaks
+excluded_dates
+dst_ambiguous
+dst_nonexistent
+~~~
+
 ## Schedule
 
-Defines recurring availability and exceptions:
+Defines recurring availability and exceptions.
 
 ~~~text
 weekly
@@ -27,9 +41,7 @@ annual_closed_dates
 
 ## Slot
 
-Represents an immutable appointment interval.
-
-Common attributes and methods:
+Represents an appointment interval.
 
 ~~~text
 start
@@ -45,29 +57,83 @@ to_dict()
 
 ## AvailabilityEngine
 
-Adds booking-aware behavior:
+Adds availability and booking behavior.
 
 ~~~text
-availability
+available_slots()
+reserve()
+cancel()
 capacity
 buffers
 booking policies
-reservations
-cancellation
+resource_id
 ~~~
 
 ## Booking
 
-Represents a reservation and its protected interval.
+Represents a reservation and its protected time interval.
 
 ## BookingPolicy
 
-Defines constraints such as minimum notice, maximum horizon, and blocked periods.
+Defines booking restrictions such as:
 
-## Storage
+- minimum notice
+- maximum booking horizon
+- blocked periods
 
-The included InMemoryBookingStore is useful for tests and simple single-process applications.
+## BookingStore
 
-For multi-process or distributed applications, use a BookingStore backed by transactional application storage.
+The storage abstraction used by the booking layer.
 
-For exact signatures, use the version of the package installed in your environment as the source of truth.
+Slotify includes:
+
+~~~text
+BookingStore
+InMemoryBookingStore
+~~~
+
+Use the in-memory implementation for tests and simple single-process applications.
+
+For multi-process/distributed production systems, provide durable transactional storage appropriate to your application.
+
+## Exceptions
+
+The package exposes scheduling and booking exceptions including:
+
+~~~text
+SlotifyError
+ConfigurationError
+InvalidTimeError
+InvalidDateRangeError
+InvalidTimezoneError
+DSTTransitionError
+SlotConflictError
+SlotUnavailableError
+BookingConflictError
+BookingNotFoundError
+~~~
+
+## Timezone helpers
+
+~~~text
+get_timezone()
+to_utc()
+convert_timezone()
+resolve_local_datetime()
+~~~
+
+## Public imports
+
+~~~python
+from slotify import (
+    AvailabilityEngine,
+    Booking,
+    BookingPolicy,
+    BookingStore,
+    InMemoryBookingStore,
+    Schedule,
+    Slot,
+    SlotGenerator,
+    TimeWindow,
+)
+~~~
