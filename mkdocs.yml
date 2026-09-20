@@ -1,14 +1,32 @@
 site_name: Slotify Scheduling
-site_description: Timezone-aware scheduling and appointment slot engine for Python
+site_description: Timezone-aware Python scheduling and appointment slot engine for availability and booking systems.
+site_url: https://failedengineers.github.io/Slotify/
 repo_url: https://github.com/failedengineers/Slotify
+repo_name: failedengineers/Slotify
 
 theme:
   name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - tables
 
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - Django Integration: django.md
-  - Timezones & DST: timezones.md
-  - Recipes: recipes.md
-  - API Guide: api.md
+  - Integration:
+      - Django / DRF: django.md
+  - Core:
+      - Timezones & DST: timezones.md
+      - Recipes: recipes.md
+      - API Guide: api.md
