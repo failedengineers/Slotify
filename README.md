@@ -290,11 +290,11 @@ Your Django/FastAPI/etc. application
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md)
-- [Django Integration](docs/django.md)
-- [Timezone & DST](docs/timezones.md)
-- [Recipes](docs/recipes.md)
-- [API Guide](docs/api.md)
+- [Getting Started](https://failedengineers.github.io/Slotify/getting-started/)
+- [Django Integration](https://failedengineers.github.io/Slotify/django/)
+- [Timezone & DST](https://failedengineers.github.io/Slotify/timezones/)
+- [Recipes](https://failedengineers.github.io/Slotify/recipes/)
+- [API Guide](https://failedengineers.github.io/Slotify/api/)
 
 ## Requirements
 
@@ -304,7 +304,7 @@ Your Django/FastAPI/etc. application
 
 ## Project status
 
-Current version: **0.1.0**
+Current version: **0.1.2**
 
 Slotify is actively developed and the API may evolve before 1.0.0.
 
