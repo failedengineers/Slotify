@@ -1,24 +1,24 @@
 # Slotify Scheduling
 
-A timezone-aware Python scheduling and appointment slot engine.
+**Timezone-aware scheduling and appointment slot engine for Python.**
 
-Slotify generates appointment slots from simple schedules while handling timezones, daylight-saving transitions, breaks, exclusions, booking policies, capacity, and reservations.
+Slotify helps you build appointment and booking systems without implementing scheduling logic from scratch.
+
+**Use it for:** appointment slots, provider availability, resource booking, recurring schedules, breaks, holidays, booking rules, capacity, buffers, reservations, timezones, and daylight-saving transitions.
+
+[![PyPI](https://img.shields.io/pypi/v/slotify-scheduling.svg)](https://pypi.org/project/slotify-scheduling/)
+[![Python](https://img.shields.io/pypi/pyversions/slotify-scheduling.svg)](https://pypi.org/project/slotify-scheduling/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Installation
 
-```bash
+~~~bash
 pip install slotify-scheduling
-```
+~~~
 
-The Python package is imported as:
+## Quick start
 
-```python
-from slotify import SlotGenerator
-```
-
-## Basic usage
-
-```python
+~~~python
 from slotify import SlotGenerator
 
 generator = SlotGenerator(
@@ -28,20 +28,37 @@ generator = SlotGenerator(
     timezone="Asia/Kolkata",
 )
 
-slots = generator.generate(
-    "2026-09-21",
-    "2026-09-25",
-)
+slots = generator.generate("2026-09-21", "2026-09-21")
 
 for slot in slots:
-    print(slot.start, slot.end)
-```
+    print(slot.start, "->", slot.end)
+~~~
 
-## Weekly schedules
+## Why Slotify?
 
-Different days can have different working hours.
+Scheduling becomes difficult when several rules interact:
 
-```python
+~~~text
+working hours + breaks + holidays + overrides
++ timezones + DST + capacity + buffers
++ booking policies + reservations
+~~~
+
+Slotify keeps those rules in a scheduling layer while your application remains responsible for users, authentication, payments, notifications, databases, and UI.
+
+## Common use cases
+
+- Doctor, therapist, consultant, salon, or clinic appointments
+- Meeting and interview scheduling
+- Classroom and group sessions
+- Rooms, equipment, staff, and other resource booking
+- Availability APIs in Django, FastAPI, Flask, or other Python applications
+
+## Features
+
+### Weekly schedules
+
+~~~python
 from slotify import Schedule, SlotGenerator
 
 schedule = Schedule(
@@ -51,7 +68,6 @@ schedule = Schedule(
         "wednesday": [("12:00", "20:00")],
         "thursday": [("09:00", "17:00")],
         "friday": [("09:00", "14:00")],
-        "saturday": [("10:00", "13:00")],
     }
 )
 
@@ -60,85 +76,41 @@ generator = SlotGenerator(
     duration=30,
     timezone="Asia/Kolkata",
 )
+~~~
 
-slots = generator.generate(
-    "2026-09-21",
-    "2026-09-27",
-)
-```
+### Date overrides and closures
 
-## Date overrides
-
-A specific date can replace the normal weekly schedule.
-
-```python
+~~~python
 schedule = Schedule(
-    weekly={
-        "monday": [("09:00", "17:00")],
-    },
+    weekly={"monday": [("09:00", "17:00")]},
     overrides={
         "2026-09-21": [("13:00", "18:00")],
         "2026-09-28": [],
     },
+    closed_dates=["2026-10-02"],
+    annual_closed_dates=["12-25", "01-01"],
 )
-```
+~~~
 
 An empty override closes that date.
 
-## Holidays and recurring closures
+### Breaks and split windows
 
-```python
-schedule = Schedule(
-    weekly={
-        "monday": [("09:00", "17:00")],
-        "friday": [("09:00", "17:00")],
-    },
-    closed_dates=[
-        "2026-10-02",
-    ],
-    annual_closed_dates=[
-        "12-25",
-        "01-01",
-    ],
-)
-```
-
-Explicit closures take priority over schedule overrides.
-
-## Multiple windows and breaks
-
-```python
+~~~python
 generator = SlotGenerator(
     windows=[
         ("09:00", "13:00"),
         ("14:00", "18:00"),
     ],
-    breaks=[
-        ("11:00", "11:30"),
-    ],
+    breaks=[("11:00", "11:30")],
     duration=30,
     timezone="Asia/Kolkata",
 )
-```
+~~~
 
-## Timezones and DST
+### Timezones and DST
 
-Use an IANA timezone:
-
-```python
-generator = SlotGenerator(
-    start="09:00",
-    end="17:00",
-    duration=30,
-    timezone="America/New_York",
-)
-```
-
-Slotify uses Python's timezone support and keeps slot calculations based on real timezone-aware instants.
-
-DST behavior can be configured:
-
-```python
+~~~python
 generator = SlotGenerator(
     start="01:00",
     end="03:00",
@@ -147,50 +119,31 @@ generator = SlotGenerator(
     dst_ambiguous="raise",
     dst_nonexistent="skip",
 )
-```
+~~~
 
-Supported ambiguous-time policies are:
+Ambiguous policies: raise, earlier, later, both.
 
-```text
-raise
-earlier
-later
-both
-```
+Nonexistent-time policies: raise, skip.
 
-Supported nonexistent-time policies are:
+See docs/timezones.md.
 
-```text
-raise
-skip
-```
+### Upcoming availability
 
-## Rolling availability
-
-Generate upcoming slots relative to a specific current time:
-
-```python
+~~~python
 from datetime import datetime
 
 slots = generator.upcoming(
     7,
-    now=datetime.fromisoformat(
-        "2026-09-21T08:00:00+05:30"
-    ),
+    now=datetime.fromisoformat("2026-09-21T08:00:00+05:30"),
 )
-```
+~~~
 
-Passing `now` explicitly also makes application tests deterministic.
+Passing now explicitly makes tests deterministic.
 
-## Booking and availability
+### Booking and capacity
 
-Slotify separates slot generation from booking.
-
-```python
-from slotify import (
-    AvailabilityEngine,
-    SlotGenerator,
-)
+~~~python
+from slotify import AvailabilityEngine, SlotGenerator
 
 generator = SlotGenerator(
     start="09:00",
@@ -205,176 +158,159 @@ engine = AvailabilityEngine(
     capacity=1,
 )
 
-available = engine.available_slots(
-    "2026-09-21",
+available = engine.available_slots("2026-09-21")
+
+if available:
+    booking = engine.reserve(available[0])
+    print(booking.booking_id)
+~~~
+
+Cancel with engine.cancel(booking.booking_id).
+
+For group sessions, use a larger capacity.
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_id="class-1",
+    capacity=10,
 )
+~~~
 
-booking = engine.reserve(
-    available[0],
-)
-```
+### Booking buffers
 
-Cancel a booking:
-
-```python
-engine.cancel(
-    booking.booking_id,
-)
-```
-
-## Booking buffers
-
-Buffers can prevent immediately adjacent appointments from being booked.
-
-```python
+~~~python
 engine = AvailabilityEngine(
     generator,
     buffer_before=10,
     buffer_after=15,
 )
-```
+~~~
 
-This protects the booking interval before and after the actual appointment.
+Useful for setup, cleanup, travel, or preparation time.
 
-## Capacity
+### Booking policies
 
-Multiple reservations can be allowed for the same slot:
-
-```python
-engine = AvailabilityEngine(
-    generator,
-    capacity=3,
-)
-```
-
-The included `InMemoryBookingStore` is useful for testing and single-process applications.
-
-For multi-process or distributed deployments, applications should provide a `BookingStore` implementation backed by their database or other transactional storage system.
-
-## Booking policies
-
-Minimum notice and maximum booking horizon can be configured:
-
-```python
+~~~python
 from datetime import timedelta
-
 from slotify import BookingPolicy
 
 policy = BookingPolicy(
     minimum_notice=timedelta(hours=2),
     maximum_horizon=timedelta(days=30),
 )
-```
+~~~
 
-Blocked periods can also be defined:
+Blocked periods:
 
-```python
+~~~python
 from datetime import datetime
-
-from slotify import (
-    BlockedPeriod,
-    BookingPolicy,
-)
+from slotify import BlockedPeriod, BookingPolicy
 
 policy = BookingPolicy(
     blocked_periods=(
         BlockedPeriod(
-            start=datetime.fromisoformat(
-                "2026-10-10T10:00:00+05:30"
-            ),
-            end=datetime.fromisoformat(
-                "2026-10-10T14:00:00+05:30"
-            ),
+            start=datetime.fromisoformat("2026-10-10T10:00:00+05:30"),
+            end=datetime.fromisoformat("2026-10-10T14:00:00+05:30"),
             reason="Provider unavailable",
         ),
     ),
 )
-```
+~~~
 
-Then pass the policy to the availability engine:
+## Django
 
-```python
-engine = AvailabilityEngine(
-    generator,
-    policy=policy,
-)
-```
+Slotify can sit behind a Django or Django REST Framework endpoint.
 
-## API overview
+~~~bash
+pip install slotify-scheduling
+~~~
 
-### `SlotGenerator`
+Example service:
 
-Generates slots from scheduling rules.
+~~~python
+from slotify import AvailabilityEngine, SlotGenerator
 
-```text
-generate()
-generate_for_date()
-upcoming()
-```
+def get_provider_engine(provider):
+    generator = SlotGenerator(
+        start=provider.work_start.strftime("%H:%M"),
+        end=provider.work_end.strftime("%H:%M"),
+        duration=provider.slot_duration,
+        timezone=provider.timezone,
+    )
 
-### `Schedule`
+    return AvailabilityEngine(
+        generator,
+        resource_id=str(provider.pk),
+        capacity=1,
+    )
+~~~
 
-Defines:
+Example view:
 
-```text
-weekly schedules
-date overrides
-closed dates
-annual recurring closures
-```
+~~~python
+from django.http import JsonResponse
+from .models import Provider
+from .services import get_provider_engine
 
-### `Slot`
+def available_slots(request, provider_id):
+    provider = Provider.objects.get(pk=provider_id)
+    engine = get_provider_engine(provider)
 
-Represents one immutable appointment interval.
+    slots = engine.available_slots("2026-09-21")
 
-```text
-start
-end
-duration
-start_utc
-end_utc
-overlaps()
-contains()
-in_timezone()
-to_dict()
-```
+    return JsonResponse({
+        "provider_id": provider.pk,
+        "slots": [slot.to_dict() for slot in slots],
+    })
+~~~
 
-### `AvailabilityEngine`
+**Production note:** the built-in InMemoryBookingStore is for tests and simple single-process applications. Multi-worker or distributed Django deployments should provide a database-backed BookingStore and enforce the required transaction/concurrency rules in the application's database layer.
 
-Handles:
+## Architecture
 
-```text
-availability
-capacity
-buffers
-booking policies
-reservations
-cancellation
-```
+~~~text
+Your Django/FastAPI/etc. application
+├── users and authentication
+├── providers/resources
+├── database
+├── payments
+├── notifications
+└── frontend/API
+          |
+          v
+       Slotify
+       ├── Schedule
+       ├── SlotGenerator
+       ├── Slot
+       ├── AvailabilityEngine
+       ├── BookingPolicy
+       └── Booking
+~~~
 
-### `Booking`
+## Documentation
 
-Represents a reservation and its protected time interval.
+- [Getting Started](docs/getting-started.md)
+- [Django Integration](docs/django.md)
+- [Timezone & DST](docs/timezones.md)
+- [Recipes](docs/recipes.md)
+- [API Guide](docs/api.md)
 
 ## Requirements
 
-* Python 3.10+
-* No third-party runtime dependency on Linux/macOS
-* `tzdata` is installed automatically on Windows
+- Python 3.10+
+- No third-party runtime dependency on Linux/macOS
+- tzdata is installed automatically on Windows
 
 ## Project status
 
-Slotify is actively developed. The API may evolve before the first stable `1.0.0` release.
+Current version: **0.1.0**
 
-Current development version:
-
-```text
-0.1.0
-```
+Slotify is actively developed and the API may evolve before 1.0.0.
 
 ## License
 
-Slotify is released under the MIT License.
+MIT License
 
 ## Author
 
