@@ -1,6 +1,6 @@
 # Recipes
 
-## Doctor appointments
+## Doctor / therapist appointments
 
 ~~~python
 from slotify import AvailabilityEngine, SlotGenerator
@@ -59,21 +59,27 @@ generator = SlotGenerator(
 )
 ~~~
 
+## Closed holiday
+
+~~~python
+schedule = Schedule(
+    weekly={
+        "monday": [("09:00", "17:00")],
+    },
+    annual_closed_dates=["12-25"],
+)
+~~~
+
 ## One-off closure
 
 ~~~python
 schedule = Schedule(
-    weekly={"monday": [("09:00", "17:00")]},
-    overrides={"2026-10-12": []},
-)
-~~~
-
-## Recurring holiday
-
-~~~python
-schedule = Schedule(
-    weekly={"monday": [("09:00", "17:00")]},
-    annual_closed_dates=["12-25"],
+    weekly={
+        "monday": [("09:00", "17:00")],
+    },
+    overrides={
+        "2026-10-12": [],
+    },
 )
 ~~~
 
@@ -96,5 +102,26 @@ from slotify import BookingPolicy
 policy = BookingPolicy(
     minimum_notice=timedelta(hours=2),
     maximum_horizon=timedelta(days=30),
+)
+~~~
+
+## Provider unavailable for a period
+
+~~~python
+from datetime import datetime
+from slotify import BlockedPeriod, BookingPolicy
+
+policy = BookingPolicy(
+    blocked_periods=(
+        BlockedPeriod(
+            start=datetime.fromisoformat(
+                "2026-10-10T10:00:00+05:30"
+            ),
+            end=datetime.fromisoformat(
+                "2026-10-10T14:00:00+05:30"
+            ),
+            reason="Provider unavailable",
+        ),
+    ),
 )
 ~~~
