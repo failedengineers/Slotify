@@ -8,6 +8,7 @@ from slotify import (
     BusyPeriod,
     BookingConflictError,
     SlotGenerator,
+    SlotUnavailableError,
 )
 
 
