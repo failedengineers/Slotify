@@ -23,6 +23,7 @@ class AvailabilityResult:
     available: bool
     reason: str | None = None
     resource_id: str | None = None
+    code: str | None = None
 
 
 class AvailabilityEngine:
@@ -389,6 +390,7 @@ class AvailabilityEngine:
                 slot=slot,
                 available=False,
                 reason=str(exc),
+                code="policy",
             )
 
         if self.resource_pool:
@@ -407,11 +409,13 @@ class AvailabilityEngine:
                         slot=slot,
                         available=True,
                         resource_id=resource_id,
+                        code="available",
                     )
             return AvailabilityResult(
                 slot=slot,
                 available=False,
                 reason="No resource in the resource pool is available.",
+            code="resource_unavailable",
             )
 
         candidate = self._candidate(slot)
@@ -420,6 +424,7 @@ class AvailabilityEngine:
                 slot=slot,
                 available=False,
                 reason="The requested slot is temporarily held.",
+                code="hold_conflict",
             )
         if (
             self.store.available_capacity(
@@ -436,12 +441,14 @@ class AvailabilityEngine:
                     if len(self.resource_ids) == 1
                     else self.resource_id
                 ),
+                code="available",
             )
 
         return AvailabilityResult(
             slot=slot,
             available=False,
             reason="The requested slot is at capacity or conflicts with an existing booking.",
+            code="capacity_conflict",
         )
 
     def check_availability(
@@ -712,6 +719,7 @@ class AvailabilityEngine:
         metadata=None,
         now: datetime | None = None,
         series_id: str | None = None,
+        idempotency_key: str | None = None,
         schedule_name: str | None = None,
     ) -> Booking:
         generator = self._generator_for(schedule_name)
@@ -743,11 +751,36 @@ class AvailabilityEngine:
                 "No resource in the resource pool is available."
             ) from last_error
 
+        if idempotency_key is not None:
+            if not isinstance(idempotency_key, str) or not idempotency_key.strip():
+                raise ValueError("idempotency_key must be a non-empty string or None.")
+            finder = getattr(self.store, "find_by_idempotency_key", None)
+            if finder is not None:
+                existing = finder(idempotency_key)
+                if existing is not None:
+                    return existing
         booking = self._booking_for(
             slot,
             metadata=metadata,
             series_id=series_id,
         )
+        if idempotency_key is not None:
+            booking = Booking(
+                slot=booking.slot,
+                resource_id=booking.resource_id,
+                booking_id=booking.booking_id,
+                status=booking.status,
+                buffer_before=booking.buffer_before,
+                buffer_after=booking.buffer_after,
+                created_at=booking.created_at,
+                metadata=booking.metadata,
+                resource_ids=booking.resource_ids,
+                series_id=booking.series_id,
+                rescheduled_count=booking.rescheduled_count,
+                idempotency_key=idempotency_key,
+            )
+        if self.hold_store.conflicts(booking, now=current):
+            raise BookingConflictError("The requested slot is temporarily held.")
         return self.store.reserve(booking)
 
     def reserve_first_available(
