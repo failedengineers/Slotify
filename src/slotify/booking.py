@@ -41,6 +41,7 @@ class Booking:
     resource_ids: tuple[str, ...] = ()
     series_id: str | None = None
     rescheduled_count: int = 0
+    idempotency_key: str | None = None
 
     def __post_init__(self) -> None:
         if not self.booking_id:
@@ -62,6 +63,11 @@ class Booking:
             or self.created_at.utcoffset() is None
         ):
             raise ValueError("created_at must be timezone-aware.")
+
+        if self.idempotency_key is not None and (
+            not isinstance(self.idempotency_key, str) or not self.idempotency_key.strip()
+        ):
+            raise ValueError("idempotency_key must be a non-empty string or None.")
 
         if (
             isinstance(self.rescheduled_count, bool)
@@ -149,6 +155,7 @@ class Booking:
             resource_ids=self.resource_ids,
             series_id=self.series_id,
             rescheduled_count=self.rescheduled_count,
+            idempotency_key=self.idempotency_key,
         )
 
     def reschedule(self, new_slot: Slot) -> "Booking":
@@ -177,6 +184,7 @@ class Booking:
             "status": self.status,
             "series_id": self.series_id,
             "rescheduled_count": self.rescheduled_count,
+            "idempotency_key": self.idempotency_key,
             "slot": self.slot.to_dict(),
             "protected_start": self.protected_start.isoformat(),
             "protected_end": self.protected_end.isoformat(),
@@ -225,6 +233,13 @@ class BookingStore(Protocol):
     def get(self, booking_id: str) -> Booking:
         ...
 
+    def find_by_idempotency_key(self, idempotency_key: str) -> Booking | None:
+        with self._lock:
+            for booking in self._bookings.values():
+                if booking.idempotency_key == idempotency_key and booking.status == "confirmed":
+                    return booking
+        return None
+
     def list(
         self,
         *,
@@ -232,6 +247,9 @@ class BookingStore(Protocol):
         series_id: str | None = None,
         include_cancelled: bool = False,
     ) -> list[Booking]:
+        ...
+
+    def find_by_idempotency_key(self, idempotency_key: str) -> Booking | None:
         ...
 
     def available_capacity(
