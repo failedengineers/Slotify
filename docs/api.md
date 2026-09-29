@@ -279,3 +279,49 @@ RecurrenceRule(
 ~~~
 
 weekdays is valid for weekly recurrence. day_of_month is used for monthly/yearly recurrence. When a monthly day does not exist in a month, the last valid day of that month is used. count counts emitted occurrences, so excluded dates do not consume the count.
+
+
+## v0.4.0 holds
+
+Temporary checkout holds are represented by BookingHold.
+
+~~~python
+from datetime import datetime
+
+hold = engine.hold(
+    slot,
+    expires_at=datetime.fromisoformat("2026-10-05T09:10:00+05:30"),
+)
+
+booking = engine.confirm_hold(hold.hold_id)
+~~~
+
+The public hold storage API includes HoldStore and InMemoryHoldStore.
+
+~~~text
+BookingHold
+HoldStore
+InMemoryHoldStore
+HoldExpiredError
+HoldNotFoundError
+~~~
+
+## v0.4.0 resource strategies
+
+Resource pools accept resource_strategy:
+
+~~~python
+AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="least_loaded",
+)
+~~~
+
+Supported values:
+
+~~~text
+first_available
+round_robin
+least_loaded
+~~~
