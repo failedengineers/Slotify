@@ -370,6 +370,93 @@ reserve(slot)
 Keep authentication, payments, notifications, and database records in your application.
 
 
+
+## Temporary holds
+
+A hold is a short-lived reservation used while a customer is completing checkout or payment.
+
+~~~python
+from datetime import datetime
+
+hold = engine.hold(
+    slot,
+    expires_at=datetime.fromisoformat("2026-10-05T09:10:00+05:30"),
+    now=datetime.fromisoformat("2026-10-05T09:00:00+05:30"),
+)
+~~~
+
+While the hold is active, the slot is unavailable.
+
+~~~python
+assert not engine.is_available(
+    slot,
+    now=datetime.fromisoformat("2026-10-05T09:05:00+05:30"),
+)
+~~~
+
+Confirm after successful payment:
+
+~~~python
+booking = engine.confirm_hold(
+    hold.hold_id,
+    now=datetime.fromisoformat("2026-10-05T09:05:00+05:30"),
+)
+~~~
+
+Release an abandoned checkout:
+
+~~~python
+engine.release_hold(hold.hold_id)
+~~~
+
+The built-in InMemoryHoldStore automatically ignores expired holds. Production applications should implement HoldStore using durable storage and the same transaction/concurrency strategy as BookingStore.
+
+A hold is a temporary claim; it is not a confirmed booking and should not be treated as payment success.
+
+## Resource selection strategies
+
+Resource pools support three selection strategies.
+
+### First available
+
+This is the default:
+
+~~~python
+AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="first_available",
+)
+~~~
+
+Resources are checked in the order supplied.
+
+### Round robin
+
+~~~python
+AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="round_robin",
+)
+~~~
+
+The engine rotates the starting resource for successive selections. The final reservation is still protected by the store's conflict check.
+
+### Least loaded
+
+~~~python
+AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="least_loaded",
+)
+~~~
+
+The engine counts overlapping confirmed bookings for each resource and tries the least-loaded resource first.
+
+These strategies are allocation helpers, not business rules. Your application can still store its own provider qualifications, service restrictions, locations, and other routing rules.
+
 ## Resource pools
 
 When a customer can be served by any one member of a team, use resource_pool instead of requiring a specific resource.
