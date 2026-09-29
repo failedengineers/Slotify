@@ -24,19 +24,26 @@ markdown_extensions:
   - tables
 
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Concepts: concepts.md
-  - Configuration: configuration.md
-  - Availability & Booking: booking.md
-  - Integration:
+  - Start Here:
+      - Home: index.md
+      - Getting Started: getting-started.md
+      - Build Your First Booking System: build-your-first-booking.md
+  - Concepts:
+      - How Slotify Works: concepts.md
+      - Configuration: configuration.md
+      - Availability & Booking: booking.md
+  - Recipes:
+      - Common Scheduling Patterns: recipes.md
+      - Temporary Holds: holds.md
+      - Resource Pools: resources.md
+      - Examples: examples.md
+  - Integrations:
       - Django / DRF: django.md
-  - Core:
-      - Timezones & DST: timezones.md
-      - Recipes: recipes.md
+  - Reference:
       - API Guide: api.md
-  - Guides:
+      - Timezones & DST: timezones.md
+  - Production:
       - Testing & Production: testing.md
-      - Migrating to v0.2.0: migration.md
       - FAQ: faq.md
       - Changelog: changelog.md
+      - Migrating from v0.2/v0.3: migration.md
