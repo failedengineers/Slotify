@@ -61,3 +61,17 @@ These strategies are allocation helpers. Your application should still filter re
 Resource selection does not replace concurrency control.
 
 Two requests can observe the same resource as available. The final reservation in your BookingStore must be atomic.
+
+
+## Required resources
+
+For appointments that require multiple resources together, use resource_ids:
+
+~~~python
+AvailabilityEngine(
+    generator,
+    resource_ids=("doctor-1", "room-4"),
+)
+~~~
+
+A booking protects all listed resources. Another booking conflicts when its protected interval overlaps and it shares at least one required resource. This provides the core availability intersection needed for provider + room + equipment style appointments.
