@@ -23,7 +23,9 @@ hold = engine.hold(
     now=created,
 )
 
-assert not engine.is_available(slot, now=created)
+result = engine.check_availability(slot, now=created)
+assert result.available
+assert result.resource_id == "doctor-2"
 
 booking = engine.confirm_hold(hold.hold_id, now=created)
 assert booking.resource_id in {"doctor-1", "doctor-2"}
