@@ -25,7 +25,7 @@ def test_first_slot_is_available():
     )
 
     slots = engine.available_slots(
-        "2026-09-21"
+        "2026-10-21"
     )
 
     assert len(slots) == 2
@@ -37,7 +37,7 @@ def test_booking_removes_slot_from_availability():
     )
 
     slots = engine.available_slots(
-        "2026-09-21"
+        "2026-10-21"
     )
 
     booking = engine.reserve(
@@ -47,7 +47,7 @@ def test_booking_removes_slot_from_availability():
     assert booking.status == "confirmed"
 
     remaining = engine.available_slots(
-        "2026-09-21"
+        "2026-10-21"
     )
 
     assert len(remaining) == 1
@@ -65,7 +65,7 @@ def test_double_booking_is_rejected():
     )
 
     slot = engine.generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     engine.reserve(slot)
@@ -86,7 +86,7 @@ def test_capacity_allows_multiple_bookings():
     )
 
     slot = engine.generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     first = engine.reserve(slot)
@@ -112,11 +112,11 @@ def test_buffer_blocks_adjacent_booking():
     )
 
     first = generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     second = generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[1]
 
     engine.reserve(first)
@@ -130,7 +130,7 @@ def test_cancel_makes_slot_available():
     )
 
     slot = engine.generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     booking = engine.reserve(slot)
@@ -160,7 +160,7 @@ def test_resource_capacity_is_independent():
     )
 
     slot = make_generator().generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     doctor_a.reserve(slot)
@@ -175,7 +175,7 @@ def test_reserve_first_available():
     )
 
     booking = engine.reserve_first_available(
-        "2026-09-21"
+        "2026-10-21"
     )
 
     assert booking.slot.start.hour == 9
@@ -189,7 +189,7 @@ def test_booking_protection_interval():
     )
 
     slot = make_generator().generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     booking = engine.reserve(slot)
