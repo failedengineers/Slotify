@@ -62,6 +62,6 @@ InMemoryBookingStore remains useful for tests and simple single-process services
 python -c "import slotify; print(slotify.__version__)"
 ~~~
 
-Expected: 0.2.0.
+Expected: 0.4.0.
 
 See the Changelog for release details.
