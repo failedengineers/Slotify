@@ -666,6 +666,7 @@ class AvailabilityEngine:
         if expires_at <= current:
             raise ValueError("expires_at must be in the future.")
         self.policy.validate(slot, now=current)
+        self._validate_limits(slot, now=current)
         if self.resource_pool:
             for resource_id in self._ordered_pool_resources(slot):
                 candidate = self._candidate(slot, resource_id=resource_id)
@@ -697,6 +698,8 @@ class AvailabilityEngine:
         """Convert an active hold into a confirmed booking."""
         current = self._current(now, self.generator)
         hold = self.hold_store.get(hold_id, now=current)
+        self.policy.validate(hold.slot, now=current)
+        self._validate_limits(hold.slot, now=current)
         booking = self._candidate(
             hold.slot,
             resource_id=hold.resource_id,
@@ -876,6 +879,11 @@ class AvailabilityEngine:
         self._validate_limits(new_slot, now=current)
 
         candidate = booking.reschedule(new_slot)
+
+        if self.hold_store.conflicts(candidate, now=current):
+            raise BookingConflictError(
+                "The requested interval is temporarily held."
+            )
 
         available = self.store.available_capacity(
             candidate,
