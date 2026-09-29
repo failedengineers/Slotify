@@ -122,3 +122,25 @@ def test_invalid_resource_strategy():
             resource_pool=("a", "b"),
             resource_strategy="random",
         )
+
+
+def test_round_robin_availability_checks_do_not_advance_selection():
+    engine = AvailabilityEngine(
+        make_generator(),
+        resource_pool=("a", "b"),
+        resource_strategy="round_robin",
+    )
+    slot = make_generator().generate_for_date("2026-10-05")[0]
+    now = datetime.fromisoformat("2026-10-04T08:00:00+05:30")
+
+    first = engine.check_availability(slot, now=now)
+    second = engine.check_availability(slot, now=now)
+
+    assert first.resource_id == "a"
+    assert second.resource_id == "a"
+
+    booking = engine.reserve(slot, now=now)
+    assert booking.resource_id == "a"
+
+    third = engine.check_availability(slot, now=now)
+    assert third.resource_id == "b"

@@ -331,7 +331,7 @@ class AvailabilityEngine:
                         "The slot does not satisfy the minimum gap between bookings."
                     )
 
-    def _ordered_pool_resources(self, slot: Slot) -> tuple[str, ...]:
+    def _ordered_pool_resources(self, slot: Slot, *, advance: bool = False) -> tuple[str, ...]:
         if not self.resource_pool:
             return ()
         resources = list(self.resource_pool)
@@ -339,7 +339,8 @@ class AvailabilityEngine:
             return tuple(resources)
         if self.resource_strategy == "round_robin":
             offset = self._resource_cursor % len(resources)
-            self._resource_cursor = (self._resource_cursor + 1) % len(resources)
+            if advance:
+                self._resource_cursor = (self._resource_cursor + 1) % len(resources)
             return tuple(resources[offset:] + resources[:offset])
 
         def load(resource_id: str) -> int:
@@ -721,7 +722,10 @@ class AvailabilityEngine:
 
         if self.resource_pool:
             last_error: BookingConflictError | None = None
-            for resource_id in self._ordered_pool_resources(slot):
+            for resource_id in self._ordered_pool_resources(
+                slot,
+                advance=self.resource_strategy == "round_robin",
+            ):
                 booking = self._candidate(
                     slot,
                     resource_id=resource_id,

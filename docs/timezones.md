@@ -84,7 +84,7 @@ from datetime import datetime
 slots = generator.upcoming(
     7,
     now=datetime.fromisoformat(
-        "2026-09-21T08:00:00-04:00"
+        "2026-10-05T08:00:00-04:00"
     ),
 )
 ~~~

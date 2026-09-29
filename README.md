@@ -21,7 +21,7 @@ generator = SlotGenerator(
     timezone="Asia/Kolkata",
 )
 
-slots = generator.generate("2026-09-21", "2026-09-21")
+slots = generator.generate("2026-10-05", "2026-10-05")
 
 for slot in slots:
     print(slot.start, "->", slot.end)
@@ -104,7 +104,7 @@ generator = SlotGenerator(
 schedule = Schedule(
     weekly={"monday": [("09:00", "17:00")]},
     overrides={
-        "2026-09-21": [("13:00", "18:00")],
+        "2026-10-05": [("13:00", "18:00")],
         "2026-09-28": [],
     },
     closed_dates=["2026-10-02"],
@@ -154,7 +154,7 @@ from datetime import datetime
 
 slots = generator.upcoming(
     7,
-    now=datetime.fromisoformat("2026-09-21T08:00:00+05:30"),
+    now=datetime.fromisoformat("2026-10-05T08:00:00+05:30"),
 )
 ~~~
 
@@ -182,7 +182,7 @@ engine = AvailabilityEngine(
     capacity=1,
 )
 
-available = engine.available_slots("2026-09-21")
+available = engine.available_slots("2026-10-05")
 
 if available:
     booking = engine.reserve(available[0])
@@ -281,7 +281,7 @@ def available_slots(request, provider_id):
     provider = Provider.objects.get(pk=provider_id)
     engine = get_provider_engine(provider)
 
-    slots = engine.available_slots("2026-09-21")
+    slots = engine.available_slots("2026-10-05")
 
     return JsonResponse({
         "provider_id": provider.pk,

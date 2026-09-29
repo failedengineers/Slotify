@@ -11,7 +11,7 @@ For usage questions, open a GitHub issue with:
 - a small reproducible example
 - expected and actual behavior
 
-For common patterns, start with the [documentation](https://failedengineers.github.io/Slotify/).
+For common patterns, start with the [documentation](https://slotify-scheduling.ilovelabfile.in/).
 
 ## Bug reports
 
