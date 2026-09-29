@@ -49,7 +49,7 @@ class HoldStore(Protocol):
     def create(self, hold: BookingHold) -> BookingHold:
         ...
 
-    def get(self, hold_id: str) -> BookingHold:
+    def get(self, hold_id: str, *, now: datetime | None = None) -> BookingHold:
         ...
 
     def release(self, hold_id: str) -> BookingHold:
@@ -101,7 +101,7 @@ class InMemoryHoldStore:
             hold = self._holds.get(hold_id)
             if hold is None or hold_id in self._released:
                 raise HoldNotFoundError(f"Hold {hold_id!r} was not found.")
-            if not hold.is_active():
+            if not hold.is_active(now):
                 raise HoldExpiredError(f"Hold {hold_id!r} has expired.")
             return hold
 
