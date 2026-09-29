@@ -1,4 +1,4 @@
-# Migrating to v0.2.0
+# Migrating to v0.4.0
 
 Version 0.2.0 adds booking features while keeping the core slot-generation model.
 
