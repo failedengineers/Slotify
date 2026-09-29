@@ -112,3 +112,45 @@ def test_booking_to_ics():
     assert "SUMMARY:Doctor Appointment" in text
     assert "UID:" + booking.booking_id + "@slotify" in text
     assert "DTSTART:20260921T033000Z" in text
+
+
+def test_reserve_recurring_creates_series():
+    engine = AvailabilityEngine(generator())
+    first_slot = generator().generate_for_date("2026-09-21")[0]
+    now = datetime.fromisoformat("2026-09-20T08:00:00+05:30")
+
+    bookings = engine.reserve_recurring(
+        first_slot,
+        RecurrenceRule(weekdays=(0,), count=3),
+        now=now,
+    )
+
+    assert len(bookings) == 3
+    assert len({booking.series_id for booking in bookings}) == 1
+    assert [booking.slot.start.date().isoformat() for booking in bookings] == [
+        "2026-09-21",
+        "2026-09-28",
+        "2026-10-05",
+    ]
+
+
+def test_reserve_recurring_rolls_back_on_conflict():
+    store = InMemoryBookingStore()
+    engine = AvailabilityEngine(generator(), store=store)
+    slots = generator().generate_for_date("2026-09-28")
+    now = datetime.fromisoformat("2026-09-20T08:00:00+05:30")
+
+    engine.reserve(slots[0], now=now)
+
+    first_slot = generator().generate_for_date("2026-09-21")[0]
+
+    with pytest.raises(BookingConflictError):
+        engine.reserve_recurring(
+            first_slot,
+            RecurrenceRule(weekdays=(0,), count=2),
+            now=now,
+        )
+
+    assert store.list() == [
+        store.get(store.list()[0].booking_id)
+    ]
