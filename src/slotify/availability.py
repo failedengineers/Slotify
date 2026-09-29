@@ -728,6 +728,15 @@ class AvailabilityEngine:
         self.policy.validate(slot, now=current)
         self._validate_limits(slot, now=current)
 
+        if idempotency_key is not None:
+            if not isinstance(idempotency_key, str) or not idempotency_key.strip():
+                raise ValueError("idempotency_key must be a non-empty string or None.")
+            finder = getattr(self.store, "find_by_idempotency_key", None)
+            if finder is not None:
+                existing = finder(idempotency_key)
+                if existing is not None:
+                    return existing
+
         if self.resource_pool:
             last_error: BookingConflictError | None = None
             for resource_id in self._ordered_pool_resources(
@@ -740,6 +749,21 @@ class AvailabilityEngine:
                     metadata=metadata,
                     series_id=series_id,
                 )
+                if idempotency_key is not None:
+                    booking = Booking(
+                        slot=booking.slot,
+                        resource_id=booking.resource_id,
+                        booking_id=booking.booking_id,
+                        status=booking.status,
+                        buffer_before=booking.buffer_before,
+                        buffer_after=booking.buffer_after,
+                        created_at=booking.created_at,
+                        metadata=booking.metadata,
+                        resource_ids=booking.resource_ids,
+                        series_id=booking.series_id,
+                        rescheduled_count=booking.rescheduled_count,
+                        idempotency_key=idempotency_key,
+                    )
                 try:
                     if self.hold_store.conflicts(booking, now=current):
                         last_error = BookingConflictError("The requested slot is temporarily held.")
