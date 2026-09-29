@@ -695,7 +695,7 @@ class AvailabilityEngine:
         return self.hold_store.create(BookingHold(
             slot=slot,
             expires_at=expires_at,
-            resource_ids=candidate.effective_resource_ids,
+            resource_ids=tuple(r for r in candidate.effective_resource_ids if r is not None),
             metadata=metadata or {},
         ))
 
