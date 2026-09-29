@@ -109,15 +109,25 @@ Slotify does **not** replace your Django/FastAPI/Flask application. It handles s
 
 ## Choose your path
 
-**New to Slotify?** Start with [Getting Started](getting-started.md).
+**New to Slotify?** Start with [Getting Started](getting-started.md), then read [Core Concepts](concepts.md).
 
 **Using Django?** Go to [Django Integration](django.md).
 
 **Working across timezones?** Read [Timezone & DST](timezones.md).
 
+**Looking for configuration help?** See [Configuration](configuration.md).
+
+**Building booking flows?** See [Availability & Booking](booking.md).
+
+**Using Django?** See [Django / DRF](django.md).
+
 **Looking for copy-paste patterns?** See [Recipes](recipes.md).
 
+**Deploying to production?** Read [Testing & Production](testing.md).
+
 **Need the public API map?** See [API Guide](api.md).
+
+**Upgrading from 0.1.x?** Read [Migrating to v0.2.0](migration.md).
 
 ## Project links
 
