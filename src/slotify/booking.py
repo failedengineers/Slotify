@@ -233,13 +233,6 @@ class BookingStore(Protocol):
     def get(self, booking_id: str) -> Booking:
         ...
 
-    def find_by_idempotency_key(self, idempotency_key: str) -> Booking | None:
-        with self._lock:
-            for booking in self._bookings.values():
-                if booking.idempotency_key == idempotency_key and booking.status == "confirmed":
-                    return booking
-        return None
-
     def list(
         self,
         *,
@@ -425,6 +418,13 @@ class InMemoryBookingStore:
                 )
 
             return booking
+
+    def find_by_idempotency_key(self, idempotency_key: str) -> Booking | None:
+        with self._lock:
+            for booking in self._bookings.values():
+                if booking.idempotency_key == idempotency_key and booking.status == "confirmed":
+                    return booking
+        return None
 
     def list(
         self,
