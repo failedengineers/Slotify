@@ -18,6 +18,7 @@ class BookingHold:
     slot: Slot
     expires_at: datetime
     resource_id: str | None = None
+    resource_ids: tuple[str, ...] = ()
     hold_id: str = field(default_factory=lambda: str(uuid4()))
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -26,15 +27,17 @@ class BookingHold:
             raise ValueError("hold_id cannot be empty.")
         if self.expires_at.tzinfo is None or self.expires_at.utcoffset() is None:
             raise ValueError("expires_at must be timezone-aware.")
+        normalized = list(self.resource_ids)
+        if any(not isinstance(value, str) or not value.strip() for value in normalized):
+            raise ValueError("resource_ids must contain non-empty strings.")
         if self.resource_id is not None and (
             not isinstance(self.resource_id, str) or not self.resource_id.strip()
         ):
             raise ValueError("resource_id must be a non-empty string or None.")
+        if self.resource_id is not None and self.resource_id not in normalized:
+            normalized.insert(0, self.resource_id)
+        object.__setattr__(self, "resource_ids", tuple(dict.fromkeys(normalized)))
         object.__setattr__(self, "metadata", dict(self.metadata))
-
-    @property
-    def resource_ids(self) -> tuple[str | None, ...]:
-        return (self.resource_id,)
 
     def is_active(self, now: datetime | None = None) -> bool:
         current = now or datetime.now(timezone.utc)
