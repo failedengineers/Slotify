@@ -61,17 +61,39 @@ Adds availability and booking behavior.
 
 ~~~text
 available_slots()
+upcoming_available()
 reserve()
+reserve_first_available()
+reserve_recurring()
 cancel()
+reschedule()
 capacity
 buffers
 booking policies
 resource_id
+resource_ids
 ~~~
 
 ## Booking
 
 Represents a reservation and its protected time interval.
+
+Additional v0.2.0 fields include:
+
+~~~text
+resource_ids
+series_id
+rescheduled_count
+~~~
+
+Useful methods include:
+
+~~~text
+cancel()
+reschedule()
+to_dict()
+to_ics()
+~~~
 
 ## RecurrenceRule
 
@@ -149,6 +171,7 @@ from slotify import (
     BookingPolicy,
     BookingStore,
     InMemoryBookingStore,
+    RecurrenceRule,
     Schedule,
     Slot,
     SlotGenerator,
