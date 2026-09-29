@@ -434,7 +434,7 @@ RecurrenceRule(
 
 ## Project status
 
-Current version: **0.5.0**
+Current version: **0.5.1**
 
 Slotify is currently in alpha. The API may evolve before 1.0.0, so pin the version in production applications and review the changelog when upgrading.
 
