@@ -5,6 +5,7 @@ import pytest
 from slotify import (
     AvailabilityEngine,
     BookingConflictError,
+    HoldExpiredError,
     BookingHold,
     InMemoryHoldStore,
     SlotGenerator,
@@ -70,7 +71,7 @@ def test_hold_cannot_be_confirmed_after_expiry():
         expires_at=datetime.fromisoformat("2026-10-04T08:15:00+05:30"),
         now=created,
     )
-    with pytest.raises(Exception):
+    with pytest.raises(HoldExpiredError):
         engine.confirm_hold(
             hold.hold_id,
             now=datetime.fromisoformat("2026-10-04T08:16:00+05:30"),
