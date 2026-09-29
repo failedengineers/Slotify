@@ -36,6 +36,7 @@ nav:
       - Common Scheduling Patterns: recipes.md
       - Temporary Holds: holds.md
       - Resource Pools: resources.md
+      - Examples: examples.md
   - Integrations:
       - Django / DRF: django.md
   - Reference:
