@@ -45,7 +45,7 @@ generator = SlotGenerator(
     timezone="Asia/Kolkata",
 )
 
-slots = generator.generate("2026-09-21", "2026-09-21")
+slots = generator.generate("2026-10-05", "2026-10-05")
 ~~~
 
 It can also handle weekly schedules, date overrides, closures, breaks, DST policies, rolling availability, capacity, buffers, booking policies, reservations, and cancellation.
