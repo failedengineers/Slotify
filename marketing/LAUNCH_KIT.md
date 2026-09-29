@@ -50,7 +50,7 @@ slots = generator.generate("2026-09-21", "2026-09-21")
 
 It can also handle weekly schedules, date overrides, closures, breaks, DST policies, rolling availability, capacity, buffers, booking policies, reservations, and cancellation.
 
-Docs: https://failedengineers.github.io/Slotify/
+Docs: https://slotify-scheduling.ilovelabfile.in/
 PyPI: https://pypi.org/project/slotify-scheduling/
 GitHub: https://github.com/failedengineers/Slotify
 
@@ -83,7 +83,7 @@ pip install slotify-scheduling
 ~~~
 
 Project: https://github.com/failedengineers/Slotify
-Docs: https://failedengineers.github.io/Slotify/
+Docs: https://slotify-scheduling.ilovelabfile.in/
 
 I'm especially interested in feedback from people who have built appointment or resource-booking systems.
 
