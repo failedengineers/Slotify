@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from threading import RLock
 from types import MappingProxyType
-from typing import Any, Iterable, Literal, Mapping, Protocol
+from typing import Any, Literal, Mapping, Protocol
 from uuid import uuid4
 
 from .exceptions import (
