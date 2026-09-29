@@ -687,8 +687,8 @@ class AvailabilityEngine:
         now: datetime | None = None,
     ) -> Booking:
         """Convert an active hold into a confirmed booking."""
-        hold = self.hold_store.get(hold_id)
         current = self._current(now, self.generator)
+        hold = self.hold_store.get(hold_id, now=current)
         booking = self._candidate(
             hold.slot,
             resource_id=hold.resource_id,
