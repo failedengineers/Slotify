@@ -10,9 +10,11 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.indexes
     - content.code.copy
     - search.suggest
     - search.highlight
+    - toc.follow
 
 markdown_extensions:
   - admonition
@@ -24,9 +26,17 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Concepts: concepts.md
+  - Configuration: configuration.md
+  - Availability & Booking: booking.md
   - Integration:
       - Django / DRF: django.md
   - Core:
       - Timezones & DST: timezones.md
       - Recipes: recipes.md
       - API Guide: api.md
+  - Guides:
+      - Testing & Production: testing.md
+      - Migrating to v0.2.0: migration.md
+      - FAQ: faq.md
+      - Changelog: changelog.md
