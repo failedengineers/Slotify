@@ -16,7 +16,7 @@ python -c "import slotify; print(slotify.__version__)"
 Expected for this documentation release:
 
 ~~~text
-0.2.0
+0.5.0
 ~~~
 
 ## Run your tests
@@ -181,7 +181,7 @@ Slotify is currently in alpha.
 For production, pin the version that you have tested:
 
 ~~~text
-slotify-scheduling==0.2.0
+slotify-scheduling==0.5.0
 ~~~
 
 Review the changelog before upgrading.
@@ -208,3 +208,16 @@ Before deploying a system built with Slotify, verify:
 [ ] payment and notification logic is outside Slotify
 [ ] package version is pinned
 ~~~
+
+
+## External calendar conflicts
+
+Test BusyPeriod values from Google Calendar, Outlook, your own calendar service, or another source as ordinary scheduling conflicts. Keep the external adapter in your application and pass normalized BusyPeriod objects into Slotify.
+
+## Idempotency
+
+For retried HTTP/payment requests, test that the same idempotency key returns the same Booking and that different keys still obey normal conflict rules.
+
+## Availability diagnostics
+
+Use AvailabilityResult.code for API-level error handling and AvailabilityResult.reason for logs or user-facing explanations.

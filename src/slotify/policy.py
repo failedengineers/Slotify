@@ -33,6 +33,31 @@ class BlockedPeriod:
 
 
 @dataclass(frozen=True, slots=True)
+class BusyPeriod:
+    """External-calendar or application-provided busy interval."""
+
+    start: datetime
+    end: datetime
+    reason: str = "Busy"
+
+    def __post_init__(self) -> None:
+        if (
+            self.start.tzinfo is None
+            or self.start.utcoffset() is None
+            or self.end.tzinfo is None
+            or self.end.utcoffset() is None
+        ):
+            raise ValueError("BusyPeriod datetimes must be timezone-aware.")
+        if self.end.astimezone(timezone.utc) <= self.start.astimezone(timezone.utc):
+            raise ValueError("BusyPeriod end must be after start.")
+
+    def overlaps(self, slot: Slot) -> bool:
+        start = self.start.astimezone(timezone.utc)
+        end = self.end.astimezone(timezone.utc)
+        return slot.start_utc < end and start < slot.end_utc
+
+
+@dataclass(frozen=True, slots=True)
 class BookingPolicy:
     """
     Rules that determine whether a generated slot can be booked.
@@ -60,6 +85,7 @@ class BookingPolicy:
     minimum_notice: timedelta = timedelta(0)
     maximum_horizon: timedelta | None = None
     blocked_periods: tuple[BlockedPeriod, ...] = ()
+    busy_periods: tuple[BusyPeriod, ...] = ()
     cancellation_window: timedelta | None = None
     reschedule_window: timedelta | None = None
     max_reschedules: int | None = None
@@ -115,6 +141,7 @@ class BookingPolicy:
             )
 
         object.__setattr__(self, "blocked_periods", tuple(self.blocked_periods))
+        object.__setattr__(self, "busy_periods", tuple(self.busy_periods))
 
     def validate(self, slot: Slot, *, now: datetime) -> None:
         if now.tzinfo is None or now.utcoffset() is None:
@@ -139,6 +166,12 @@ class BookingPolicy:
             if blocked.overlaps(slot):
                 raise SlotUnavailableError(
                     blocked.reason or "Slot falls inside a blocked period."
+                )
+
+        for busy in self.busy_periods:
+            if busy.overlaps(slot):
+                raise SlotUnavailableError(
+                    busy.reason or "Slot overlaps an external busy period."
                 )
 
     def validate_cancellation(

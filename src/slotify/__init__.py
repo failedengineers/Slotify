@@ -23,6 +23,7 @@ from .booking import (
 )
 from .policy import (
     BlockedPeriod,
+    BusyPeriod,
     BookingPolicy,
 )
 from .recurrence import RecurrenceRule
@@ -35,7 +36,7 @@ from .timezone import (
     to_utc,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.5.0"
 __all__ = [
     "SlotGenerator",
     "Slot",
@@ -47,6 +48,7 @@ __all__ = [
     "InMemoryBookingStore",
     "BookingPolicy",
     "BlockedPeriod",
+    "BusyPeriod",
     "RecurrenceRule",
     "SlotifyError",
     "ConfigurationError",
