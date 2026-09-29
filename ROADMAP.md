@@ -2,6 +2,14 @@
 
 Slotify is currently in alpha. This roadmap is a guide rather than a promise; priorities may change based on real-world usage and contributor feedback.
 
+## v0.2.0 completed
+
+- Recurring weekly booking series
+- Cancellation and rescheduling rules
+- Multi-resource booking constraints
+- iCalendar export
+- Expanded scheduling and booking tests
+
 ## Current focus
 
 - Keep slot generation and availability behavior predictable.
