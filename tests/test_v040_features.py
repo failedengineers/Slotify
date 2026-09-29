@@ -97,15 +97,21 @@ def test_round_robin_resource_strategy():
 
 
 def test_least_loaded_resource_strategy():
+    store_engine = AvailabilityEngine(
+        make_generator(),
+        resource_id="a",
+    )
+    slots = make_generator().generate_for_date("2026-10-05")
+    now = datetime.fromisoformat("2026-10-04T08:00:00+05:30")
+    store_engine.reserve(slots[0], now=now)
+
     engine = AvailabilityEngine(
         make_generator(),
         resource_pool=("a", "b"),
         resource_strategy="least_loaded",
+        store=store_engine.store,
     )
-    slots = make_generator().generate_for_date("2026-10-05")
-    now = datetime.fromisoformat("2026-10-04T08:00:00+05:30")
-    engine.reserve(slots[0], now=now)
-    booking = engine.reserve(slots[1], now=now)
+    booking = engine.reserve(slots[0], now=now)
     assert booking.resource_id == "b"
 
 
