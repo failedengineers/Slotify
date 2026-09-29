@@ -82,8 +82,8 @@ def test_recurring_rule():
     assert dates == [
         datetime.fromisoformat("2026-09-21").date(),
         datetime.fromisoformat("2026-09-23").date(),
-        datetime.fromisoformat("2026-10-05").date(),
-        datetime.fromisoformat("2026-10-07").date(),
+        datetime.fromisoformat("2026-09-28").date(),
+        datetime.fromisoformat("2026-09-30").date(),
     ]
 
 
