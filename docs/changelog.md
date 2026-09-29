@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+- Temporary booking holds with expiry, confirmation, and release.
+- Pluggable HoldStore interface with an in-memory implementation.
+- Resource-pool allocation strategies: first available, round robin, and least loaded.
+- Expanded tests covering hold lifecycle, expiry, and resource selection.
+
+### Documentation
+- Reworked Getting Started as a build-first tutorial.
+- Added hold and resource-strategy examples.
+- Updated public API documentation.
+- Switched documentation links to the custom documentation domain.
+
+
 ## 0.3.0 — 2026-09-29
 
 Added:
