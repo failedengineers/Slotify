@@ -1,0 +1,30 @@
+# Changelog
+
+## 0.2.0 — 2026-09-29
+
+Added:
+
+- recurring weekly appointment series
+- cancellation and rescheduling policies
+- booking rescheduling with stable booking IDs
+- multi-resource bookings
+- iCalendar export
+- upcoming bookable availability through AvailabilityEngine.upcoming_available()
+- expanded test coverage
+- expanded documentation and examples
+
+## 0.1.2 — 2026-09-20
+
+- Updated README documentation links to point to hosted documentation.
+
+## 0.1.1
+
+- Expanded README and user documentation.
+- Added Django and Django REST Framework integration examples.
+- Added timezone and DST guidance.
+- Added recipes and API overview.
+- Added package metadata and project workflows.
+
+## 0.1.0
+
+Initial public release with timezone-aware slot generation, schedules, overrides, closures, multiple windows, breaks, DST handling, rolling availability, capacity, booking buffers, booking policies, blocked periods, reservations, cancellation, and in-memory booking storage.
