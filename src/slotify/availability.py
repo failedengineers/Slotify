@@ -7,7 +7,8 @@ from typing import Mapping
 from uuid import uuid4
 
 from .booking import Booking, BookingStore, InMemoryBookingStore
-from .exceptions import BookingConflictError, SlotUnavailableError
+from .exceptions import BookingConflictError, SlotUnavailableError, HoldExpiredError
+from .holds import BookingHold, HoldStore, InMemoryHoldStore
 from .generator import SlotGenerator
 from .models import Slot
 from .policy import BookingPolicy
@@ -47,6 +48,8 @@ class AvailabilityEngine:
         policy: BookingPolicy | None = None,
         schedules: Mapping[str, SlotGenerator] | None = None,
         default_schedule: str = "default",
+        resource_strategy: str = "first_available",
+        hold_store: HoldStore | None = None,
     ) -> None:
         self.policy = policy if policy is not None else BookingPolicy()
 
@@ -110,6 +113,10 @@ class AvailabilityEngine:
         self.resource_id = resource_id
         self.resource_ids = resources
         self.resource_pool = pool
+        if resource_strategy not in {"first_available", "round_robin", "least_loaded"}:
+            raise ValueError("resource_strategy must be 'first_available', 'round_robin', or 'least_loaded'.")
+        self.resource_strategy = resource_strategy
+        self._resource_cursor = 0
         self.capacity = capacity
         self.store = (
             store
@@ -118,6 +125,7 @@ class AvailabilityEngine:
         )
         self.buffer_before = self._duration(buffer_before, "buffer_before")
         self.buffer_after = self._duration(buffer_after, "buffer_after")
+        self.hold_store = hold_store if hold_store is not None else InMemoryHoldStore()
 
     @classmethod
     def from_schedules(
@@ -323,6 +331,27 @@ class AvailabilityEngine:
                         "The slot does not satisfy the minimum gap between bookings."
                     )
 
+    def _ordered_pool_resources(self, slot: Slot) -> tuple[str, ...]:
+        if not self.resource_pool:
+            return ()
+        resources = list(self.resource_pool)
+        if self.resource_strategy == "first_available":
+            return tuple(resources)
+        if self.resource_strategy == "round_robin":
+            offset = self._resource_cursor % len(resources)
+            self._resource_cursor = (self._resource_cursor + 1) % len(resources)
+            return tuple(resources[offset:] + resources[:offset])
+
+        def load(resource_id: str) -> int:
+            return sum(
+                1
+                for booking in self.store.list(resource_id=resource_id)
+                if booking.status == "confirmed"
+                and booking.protected_start < slot.end
+                and slot.start < booking.protected_end
+            )
+        return tuple(sorted(resources, key=lambda item: (load(item), resources.index(item))))
+
     def _candidate(
         self,
         slot: Slot,
@@ -362,7 +391,7 @@ class AvailabilityEngine:
             )
 
         if self.resource_pool:
-            for resource_id in self.resource_pool:
+            for resource_id in self._ordered_pool_resources(slot):
                 candidate = self._candidate(slot, resource_id=resource_id)
                 if (
                     self.store.available_capacity(
@@ -383,6 +412,12 @@ class AvailabilityEngine:
             )
 
         candidate = self._candidate(slot)
+        if self.hold_store.conflicts(candidate, now=now):
+            return AvailabilityResult(
+                slot=slot,
+                available=False,
+                reason="The requested slot is temporarily held.",
+            )
         if (
             self.store.available_capacity(
                 candidate,
@@ -604,6 +639,69 @@ class AvailabilityEngine:
             day += timedelta(days=1)
         return result
 
+    def hold(
+        self,
+        slot: Slot,
+        *,
+        expires_at: datetime,
+        metadata=None,
+        now: datetime | None = None,
+        schedule_name: str | None = None,
+    ) -> BookingHold:
+        """Temporarily hold a slot until expires_at."""
+        generator = self._generator_for(schedule_name)
+        current = self._current(now, generator)
+        if expires_at.tzinfo is None or expires_at.utcoffset() is None:
+            raise ValueError("expires_at must be timezone-aware.")
+        if expires_at <= current:
+            raise ValueError("expires_at must be in the future.")
+        self.policy.validate(slot, now=current)
+        if self.resource_pool:
+            for resource_id in self._ordered_pool_resources(slot):
+                candidate = self._candidate(slot, resource_id=resource_id)
+                if self.store.available_capacity(candidate, capacity=self.capacity) <= 0:
+                    continue
+                if self.hold_store.conflicts(candidate, now=current):
+                    continue
+                return self.hold_store.create(BookingHold(
+                    slot=slot, expires_at=expires_at,
+                    resource_id=resource_id, metadata=metadata or {},
+                ))
+            raise BookingConflictError("No resource in the resource pool is available for the hold.")
+        candidate = self._candidate(slot, metadata=metadata)
+        if self.store.available_capacity(candidate, capacity=self.capacity) <= 0:
+            raise BookingConflictError("The requested interval is no longer available.")
+        if self.hold_store.conflicts(candidate, now=current):
+            raise BookingConflictError("The requested slot is already held.")
+        return self.hold_store.create(BookingHold(
+            slot=slot, expires_at=expires_at, metadata=metadata or {}
+        ))
+
+    def confirm_hold(
+        self,
+        hold_id: str,
+        *,
+        metadata=None,
+        now: datetime | None = None,
+    ) -> Booking:
+        """Convert an active hold into a confirmed booking."""
+        hold = self.hold_store.get(hold_id)
+        current = self._current(now, self.generator)
+        booking = self._candidate(
+            hold.slot,
+            resource_id=hold.resource_id,
+            metadata=metadata if metadata is not None else hold.metadata,
+        )
+        if self.hold_store.conflicts(booking, now=current, exclude_hold_id=hold_id):
+            raise BookingConflictError("The requested slot is blocked by another hold.")
+        confirmed = self.store.reserve(booking)
+        self.hold_store.release(hold_id)
+        return confirmed
+
+    def release_hold(self, hold_id: str) -> BookingHold:
+        """Release a temporary hold without creating a booking."""
+        return self.hold_store.release(hold_id)
+
     def reserve(
         self,
         slot: Slot,
@@ -621,7 +719,7 @@ class AvailabilityEngine:
 
         if self.resource_pool:
             last_error: BookingConflictError | None = None
-            for resource_id in self.resource_pool:
+            for resource_id in self._ordered_pool_resources(slot):
                 booking = self._candidate(
                     slot,
                     resource_id=resource_id,
@@ -629,6 +727,9 @@ class AvailabilityEngine:
                     series_id=series_id,
                 )
                 try:
+                    if self.hold_store.conflicts(booking, now=current):
+                        last_error = BookingConflictError("The requested slot is temporarily held.")
+                        continue
                     return self.store.reserve(booking)
                 except BookingConflictError as exc:
                     last_error = exc
