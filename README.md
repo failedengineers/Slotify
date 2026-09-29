@@ -68,7 +68,7 @@ Slotify is a Python library, not a hosted booking service or complete frontend. 
 
 ## Quick links
 
-- **[Documentation](https://failedengineers.github.io/Slotify/)** — guides, Django integration, recipes, and API reference
+- **[Documentation](https://slotify-scheduling.ilovelabfile.in/)** — guides, Django integration, recipes, and API reference
 - **[PyPI](https://pypi.org/project/slotify-scheduling/)** — install the package
 - **[Examples](https://github.com/failedengineers/Slotify/tree/main/examples)** — runnable starting points
 - **[Issues](https://github.com/failedengineers/Slotify/issues)** — bugs and feature requests
@@ -145,7 +145,7 @@ Ambiguous policies: raise, earlier, later, both.
 
 Nonexistent-time policies: raise, skip.
 
-See the [Timezone & DST guide](https://failedengineers.github.io/Slotify/timezones/).
+See the [Timezone & DST guide](https://slotify-scheduling.ilovelabfile.in/timezones/).
 
 ### Upcoming availability
 
@@ -162,7 +162,7 @@ Passing now explicitly makes tests deterministic.
 
 ### Recurring bookings, rescheduling and resources
 
-Recurring appointment series, cancellation/rescheduling rules, multi-resource bookings, resource pools, availability queries, booking limits, named schedules, availability explanations, and iCalendar export are available in v0.3.0.
+Recurring appointment series, cancellation/rescheduling rules, multi-resource bookings, resource pools, availability queries, booking limits, named schedules, availability explanations, and iCalendar export are available in v0.4.0.
 
 ### Booking and capacity
 
@@ -378,12 +378,12 @@ RecurrenceRule(
 
 ## Documentation
 
-- [Documentation home](https://failedengineers.github.io/Slotify/)
-- [Getting Started](https://failedengineers.github.io/Slotify/getting-started/)
-- [Django / DRF](https://failedengineers.github.io/Slotify/django/)
-- [Timezone & DST](https://failedengineers.github.io/Slotify/timezones/)
-- [Recipes](https://failedengineers.github.io/Slotify/recipes/)
-- [API Guide](https://failedengineers.github.io/Slotify/api/)
+- [Documentation home](https://slotify-scheduling.ilovelabfile.in/)
+- [Getting Started](https://slotify-scheduling.ilovelabfile.in/getting-started/)
+- [Django / DRF](https://slotify-scheduling.ilovelabfile.in/django/)
+- [Timezone & DST](https://slotify-scheduling.ilovelabfile.in/timezones/)
+- [Recipes](https://slotify-scheduling.ilovelabfile.in/recipes/)
+- [API Guide](https://slotify-scheduling.ilovelabfile.in/api/)
 
 ## Community
 
