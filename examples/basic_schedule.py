@@ -7,10 +7,10 @@ generator = SlotGenerator(
     timezone="Asia/Kolkata",
 )
 
-slots = generator.generate(
-    "2026-09-21",
-    "2026-09-21",
-)
+slots = generator.generate("2026-10-05")
 
-for slot in slots:
+assert slots
+assert slots[0].start.hour == 9
+
+for slot in slots[:3]:
     print(slot.start, "->", slot.end)
