@@ -359,6 +359,7 @@ class AvailabilityEngine:
         slot: Slot,
         *,
         resource_id: str | None = None,
+        resource_ids: tuple[str, ...] | None = None,
         metadata=None,
         series_id: str | None = None,
     ) -> Booking:
@@ -366,6 +367,13 @@ class AvailabilityEngine:
             return self._booking_for(
                 slot,
                 resource_id=resource_id,
+                metadata=metadata,
+                series_id=series_id,
+            )
+        if resource_ids is not None:
+            return self._booking_for(
+                slot,
+                resource_ids=resource_ids,
                 metadata=metadata,
                 series_id=series_id,
             )
@@ -685,7 +693,10 @@ class AvailabilityEngine:
         if self.hold_store.conflicts(candidate, now=current):
             raise BookingConflictError("The requested slot is already held.")
         return self.hold_store.create(BookingHold(
-            slot=slot, expires_at=expires_at, metadata=metadata or {}
+            slot=slot,
+            expires_at=expires_at,
+            resource_ids=tuple(r for r in candidate.effective_resource_ids if r is not None),
+            metadata=metadata or {},
         ))
 
     def confirm_hold(
@@ -703,6 +714,11 @@ class AvailabilityEngine:
         booking = self._candidate(
             hold.slot,
             resource_id=hold.resource_id,
+            resource_ids=(
+                hold.resource_ids
+                if hold.resource_id is None and hold.resource_ids
+                else None
+            ),
             metadata=metadata if metadata is not None else hold.metadata,
         )
         if self.hold_store.conflicts(booking, now=current, exclude_hold_id=hold_id):

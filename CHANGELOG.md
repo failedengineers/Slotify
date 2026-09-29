@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+- Hardened multi-resource temporary holds so all required resources remain blocked through confirmation.
+- Added regression coverage for multi-resource and unscoped hold behavior.
+- Hardened v0.5 lifecycle edge cases: idempotency reuse, reschedule preservation, booking limits, and active-hold conflicts.
+
 ## 0.5.0
 
 - Added external BusyPeriod conflicts for calendar/application-provided busy intervals.
