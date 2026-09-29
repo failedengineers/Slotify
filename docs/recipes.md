@@ -18,7 +18,7 @@ engine = AvailabilityEngine(
     capacity=1,
 )
 
-available = engine.available_slots("2026-09-21")
+available = engine.available_slots("2026-10-21")
 
 if available:
     booking = engine.reserve(available[0])
