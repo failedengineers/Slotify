@@ -96,7 +96,7 @@ class InMemoryHoldStore:
             self._holds[hold.hold_id] = hold
             return hold
 
-    def get(self, hold_id: str) -> BookingHold:
+    def get(self, hold_id: str, *, now: datetime | None = None) -> BookingHold:
         with self._lock:
             hold = self._holds.get(hold_id)
             if hold is None or hold_id in self._released:
