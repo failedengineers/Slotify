@@ -16,7 +16,7 @@ python -c "import slotify; print(slotify.__version__)"
 Expected for this documentation release:
 
 ~~~text
-0.5.0
+0.5.1
 ~~~
 
 ## Run your tests
@@ -181,7 +181,7 @@ Slotify is currently in alpha.
 For production, pin the version that you have tested:
 
 ~~~text
-slotify-scheduling==0.5.0
+slotify-scheduling==0.5.1
 ~~~
 
 Review the changelog before upgrading.
