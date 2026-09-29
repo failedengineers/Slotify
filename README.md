@@ -326,6 +326,40 @@ booking = engine.reserve_first_available("2026-10-05")
 print(booking.resource_id)
 ~~~
 
+
+### Temporary holds
+
+Use a hold when a customer needs a few minutes to complete checkout or payment:
+
+~~~python
+from datetime import datetime
+
+hold = engine.hold(
+    slot,
+    expires_at=datetime.fromisoformat("2026-10-05T09:10:00+05:30"),
+)
+
+booking = engine.confirm_hold(hold.hold_id)
+~~~
+
+Release an abandoned checkout with `engine.release_hold(hold.hold_id)`.
+
+### Resource allocation strategies
+
+Resource pools support:
+
+- `first_available`
+- `round_robin`
+- `least_loaded`
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="least_loaded",
+)
+~~~
+
 ### Availability queries
 
 ~~~python
