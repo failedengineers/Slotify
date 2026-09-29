@@ -174,6 +174,7 @@ class Booking:
             resource_ids=self.resource_ids,
             series_id=self.series_id,
             rescheduled_count=self.rescheduled_count + 1,
+            idempotency_key=self.idempotency_key,
         )
 
     def to_dict(self) -> dict[str, Any]:
