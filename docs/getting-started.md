@@ -135,3 +135,55 @@ Your application should own users, permissions, payments, notifications, and dur
 Slotify should provide the scheduling/availability layer.
 
 For multi-process deployments, use a database-backed `BookingStore` rather than treating `InMemoryBookingStore` as shared durable state.
+
+
+## 8. Recurring bookings
+
+Create a weekly appointment series:
+
+~~~python
+from slotify import RecurrenceRule
+
+rule = RecurrenceRule(
+    weekdays=(0,),
+    count=8,
+)
+
+bookings = engine.reserve_recurring(
+    slots[0],
+    rule,
+)
+~~~
+
+## 9. Reschedule
+
+Move an existing booking while keeping its booking ID:
+
+~~~python
+new_booking = engine.reschedule(
+    booking.booking_id,
+    new_slot,
+)
+~~~
+
+## 10. Multiple resources
+
+Use multiple resources when one appointment needs more than one resource:
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_ids=("doctor-1", "room-1"),
+)
+~~~
+
+## 11. Calendar export
+
+Export a booking as an iCalendar event:
+
+~~~python
+ics_text = booking.to_ics(
+    summary="Consultation",
+    location="Room 1",
+)
+~~~
