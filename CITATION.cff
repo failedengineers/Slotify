@@ -8,5 +8,5 @@ authors:
 repository-code: "https://github.com/failedengineers/Slotify"
 url: "https://pypi.org/project/slotify-scheduling/"
 license: "MIT"
-version: "0.1.2"
-date-released: "2026-09-20"
+version: "0.2.0"
+date-released: "2026-09-29"
