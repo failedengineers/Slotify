@@ -47,9 +47,32 @@ Real scheduling systems quickly need more than start and end times:
 - minimum booking notice
 - maximum booking horizon
 - blocked periods
-- reservations and cancellation
+- reservations, cancellation, and rescheduling
+- recurring appointment series
+- multi-resource bookings
+- booking buffers and capacity
+- iCalendar (.ics) export
 
 Slotify keeps these scheduling rules in one Python layer.
+
+### v0.2.0 booking features
+
+~~~python
+from slotify import RecurrenceRule
+
+rule = RecurrenceRule(
+    weekdays=(0,),
+    count=8,
+)
+
+bookings = engine.reserve_recurring(
+    template_slot,
+    rule,
+)
+~~~
+
+You can also reschedule an existing booking, apply cancellation and rescheduling rules, use multiple resources, and export a booking as iCalendar with `booking.to_ics()`.
+
 
 ## Where it fits
 
