@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from slotify import AvailabilityEngine, HoldExpiredError, SlotGenerator
+from slotify import AvailabilityEngine, SlotGenerator
 
 generator = SlotGenerator(
     start="09:00",
@@ -27,13 +27,5 @@ assert not engine.is_available(slot, now=created)
 
 booking = engine.confirm_hold(hold.hold_id, now=created)
 assert booking.resource_id in {"doctor-1", "doctor-2"}
-
-try:
-    engine.confirm_hold(
-        hold.hold_id,
-        now=datetime.fromisoformat("2026-10-04T08:20:00+05:30"),
-    )
-except Exception:
-    pass
 
 print("Confirmed:", booking.booking_id)
