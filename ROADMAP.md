@@ -21,21 +21,30 @@ Slotify is currently in alpha. This roadmap is a guide rather than a promise; pr
 - Recurrence exclusions
 - Expanded tests and documentation
 
+## v0.5.0 completed
+
+- External busy-period conflicts
+- Machine-readable availability diagnostics
+- Idempotent reservation keys
+- Stronger hold enforcement on direct reservations
+- Database-backed store guidance
+- Django, FastAPI, and Flask integration patterns
+- Availability performance benchmark guidance
+- Required multi-resource availability documentation
+
 ## Current focus
 
 - Keep scheduling behavior predictable and timezone-safe.
-- Expand DST and recurrence edge-case coverage.
-- Improve database-backed BookingStore examples.
-- Add performance benchmarks for large availability ranges.
+- Expand DST, recurrence, concurrency, and store-contract coverage.
 - Collect real-world scheduling use cases and bug reports.
+- Measure performance with realistic workloads before optimizing.
 
 ## Exploring
 
-- PostgreSQL/SQLAlchemy BookingStore examples
-- Calendar conflict adapters
-- Additional framework examples
+- Reference PostgreSQL store implementations
+- Calendar provider adapters maintained outside the core package
+- Additional resource routing strategies only when real use cases require them
 - Performance improvements for large resource pools
-- More advanced routing and resource-selection strategies
 
 ## Scope
 
