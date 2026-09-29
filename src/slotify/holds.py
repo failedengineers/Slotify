@@ -26,8 +26,6 @@ class BookingHold:
             raise ValueError("hold_id cannot be empty.")
         if self.expires_at.tzinfo is None or self.expires_at.utcoffset() is None:
             raise ValueError("expires_at must be timezone-aware.")
-        if self.expires_at <= self.slot.start:
-            raise ValueError("expires_at must be after the slot start.")
         if self.resource_id is not None and (
             not isinstance(self.resource_id, str) or not self.resource_id.strip()
         ):
