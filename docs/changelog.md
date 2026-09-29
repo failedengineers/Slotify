@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 — 2026-09-29
+
+Added:
+
+- resource pools that select any available resource
+- direct availability queries with next_available(), available_between(), and available_for_duration()
+- structured AvailabilityResult explanations
+- booking limits per day, week, and upcoming bookings
+- minimum gap between bookings
+- named availability schedules
+- daily, weekly, monthly, and yearly recurrence
+- recurrence date exclusions
+- expanded tests and production guidance
+- expanded README and API documentation
+
 ## 0.2.0 — 2026-09-29
 
 Added:
@@ -9,7 +24,7 @@ Added:
 - booking rescheduling with stable booking IDs
 - multi-resource bookings
 - iCalendar export
-- upcoming bookable availability through AvailabilityEngine.upcoming_available()
+- upcoming bookable availability
 - expanded test coverage
 - expanded documentation and examples
 

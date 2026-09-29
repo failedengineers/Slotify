@@ -12,7 +12,7 @@ from .exceptions import (
 )
 from .schedule import Schedule
 
-from .availability import AvailabilityEngine
+from .availability import AvailabilityEngine, AvailabilityResult
 from .booking import (
     Booking,
     BookingStore,
@@ -32,12 +32,13 @@ from .timezone import (
     to_utc,
 )
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __all__ = [
     "SlotGenerator",
     "Slot",
     "TimeWindow",
     "AvailabilityEngine",
+    "AvailabilityResult",
     "Booking",
     "BookingStore",
     "InMemoryBookingStore",

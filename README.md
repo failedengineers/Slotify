@@ -162,7 +162,7 @@ Passing now explicitly makes tests deterministic.
 
 ### Recurring bookings, rescheduling and resources
 
-Recurring appointment series, cancellation/rescheduling rules, multi-resource bookings, and iCalendar export are available in v0.2.0.
+Recurring appointment series, cancellation/rescheduling rules, multi-resource bookings, resource pools, availability queries, booking limits, named schedules, availability explanations, and iCalendar export are available in v0.3.0.
 
 ### Booking and capacity
 
@@ -312,6 +312,70 @@ Your Django/FastAPI/etc. application
        └── Booking
 ~~~
 
+### Resource pools
+
+A resource pool lets Slotify choose any available resource:
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+)
+
+booking = engine.reserve_first_available("2026-10-05")
+print(booking.resource_id)
+~~~
+
+### Availability queries
+
+~~~python
+first = engine.next_available("2026-10-05", "2026-10-12")
+slots = engine.available_between(start_datetime, end_datetime)
+longer = engine.available_for_duration(90, "2026-10-05", "2026-10-12")
+~~~
+
+### Availability explanations
+
+~~~python
+result = engine.check_availability(slot)
+print(result.available)
+print(result.reason)
+print(result.resource_id)
+~~~
+
+### Booking limits
+
+~~~python
+policy = BookingPolicy(
+    max_bookings_per_day=3,
+    max_bookings_per_week=10,
+    max_upcoming_bookings=5,
+    min_gap_between_bookings=timedelta(minutes=15),
+)
+~~~
+
+### Named availability schedules
+
+~~~python
+engine = AvailabilityEngine.from_schedules(
+    {"default": normal_generator, "evening": evening_generator},
+    default_schedule="default",
+)
+slots = engine.available_slots("2026-10-05", schedule_name="evening")
+~~~
+
+### More recurrence options
+
+`RecurrenceRule` supports daily, weekly, monthly, and yearly recurrence, plus excluded dates.
+
+~~~python
+RecurrenceRule(
+    frequency="monthly",
+    day_of_month=15,
+    count=6,
+)
+~~~
+
 ## Documentation
 
 - [Documentation home](https://failedengineers.github.io/Slotify/)
@@ -336,7 +400,7 @@ Your Django/FastAPI/etc. application
 
 ## Project status
 
-Current version: **0.2.0**
+Current version: **0.3.0**
 
 Slotify is currently in alpha. The API may evolve before 1.0.0, so pin the version in production applications and review the changelog when upgrading.
 

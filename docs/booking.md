@@ -368,3 +368,120 @@ reserve(slot)
 ~~~
 
 Keep authentication, payments, notifications, and database records in your application.
+
+
+## Resource pools
+
+When a customer can be served by any one member of a team, use resource_pool instead of requiring a specific resource.
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+)
+
+booking = engine.reserve_first_available("2026-10-05")
+print(booking.resource_id)
+~~~
+
+Slotify checks the pool and chooses an available resource during reservation. The chosen resource is stored on the Booking.
+
+## Explain unavailable slots
+
+Use check_availability() when your application needs a reason instead of a boolean:
+
+~~~python
+result = engine.check_availability(slot)
+
+if not result.available:
+    print(result.reason)
+~~~
+
+Possible reasons include booking-policy failures and resource/capacity conflicts.
+
+## Find availability more directly
+
+First available slot:
+
+~~~python
+slot = engine.next_available("2026-10-05", "2026-10-12")
+~~~
+
+Availability inside an exact datetime range:
+
+~~~python
+slots = engine.available_between(
+    start_datetime,
+    end_datetime,
+)
+~~~
+
+Availability for a requested appointment duration:
+
+~~~python
+slots = engine.available_for_duration(
+    90,
+    "2026-10-05",
+    "2026-10-12",
+)
+~~~
+
+Use limit to avoid generating more results than the application needs.
+
+## Booking limits
+
+~~~python
+policy = BookingPolicy(
+    max_bookings_per_day=3,
+    max_bookings_per_week=10,
+    max_upcoming_bookings=5,
+    min_gap_between_bookings=timedelta(minutes=15),
+)
+~~~
+
+These limits are checked against confirmed bookings in the configured store.
+
+## Named schedules
+
+Use multiple SlotGenerator profiles when a provider has different availability modes:
+
+~~~python
+engine = AvailabilityEngine.from_schedules(
+    {
+        "default": weekday_generator,
+        "evening": evening_generator,
+        "weekend": weekend_generator,
+    },
+    default_schedule="default",
+)
+
+slots = engine.available_slots(
+    "2026-10-05",
+    schedule_name="evening",
+)
+~~~
+
+All schedules configured on an engine must use the same timezone.
+
+## Expanded recurrence
+
+RecurrenceRule now supports daily, weekly, monthly, and yearly series.
+
+~~~python
+RecurrenceRule(
+    frequency="monthly",
+    day_of_month=15,
+    count=6,
+)
+~~~
+
+Skip dates without consuming the occurrence count:
+
+~~~python
+RecurrenceRule(
+    frequency="weekly",
+    weekdays=(0,),
+    count=12,
+    excluded_dates=("2026-11-02",),
+)
+~~~

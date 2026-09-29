@@ -8,26 +8,35 @@ Slotify is currently in alpha. This roadmap is a guide rather than a promise; pr
 - Cancellation and rescheduling rules
 - Multi-resource booking constraints
 - iCalendar export
-- Expanded scheduling and booking tests
+
+## v0.3.0 completed
+
+- Resource pools
+- Direct availability queries
+- Booking limits
+- Minimum gaps between bookings
+- Availability explanations
+- Named availability schedules
+- Daily, weekly, monthly, and yearly recurrence
+- Recurrence exclusions
+- Expanded tests and documentation
 
 ## Current focus
 
-- Keep slot generation and availability behavior predictable.
-- Expand timezone and DST test coverage.
-- Improve Django / DRF integration examples.
-- Improve documentation and practical recipes.
+- Keep scheduling behavior predictable and timezone-safe.
+- Expand DST and recurrence edge-case coverage.
+- Improve database-backed BookingStore examples.
+- Add performance benchmarks for large availability ranges.
 - Collect real-world scheduling use cases and bug reports.
 
 ## Exploring
 
-- Database-backed booking store examples.
-- More resource and capacity patterns.
-- More detailed validation and error messages.
-- Additional integrations and framework examples.
-- Performance benchmarks for larger availability ranges.
+- PostgreSQL/SQLAlchemy BookingStore examples
+- Calendar conflict adapters
+- Additional framework examples
+- Performance improvements for large resource pools
+- More advanced routing and resource-selection strategies
 
-## How to influence the roadmap
+## Scope
 
-If you are using Slotify, open an issue with the scheduling problem you are trying to solve. Include a minimal example where possible.
-
-Feature requests are most useful when they describe the problem and desired behavior rather than only a proposed implementation.
+Slotify intentionally does not provide users, authentication, payments, notifications, hosted booking pages, or a frontend. Those remain application-level concerns.

@@ -63,6 +63,10 @@ class BookingPolicy:
     cancellation_window: timedelta | None = None
     reschedule_window: timedelta | None = None
     max_reschedules: int | None = None
+    max_bookings_per_day: int | None = None
+    max_bookings_per_week: int | None = None
+    max_upcoming_bookings: int | None = None
+    min_gap_between_bookings: timedelta = timedelta(0)
 
     def __post_init__(self) -> None:
         if self.minimum_notice < timedelta(0):
@@ -86,15 +90,29 @@ class BookingPolicy:
         ):
             raise ValueError("reschedule_window cannot be negative.")
 
-        if (
-            self.max_reschedules is not None
-            and (
-                isinstance(self.max_reschedules, bool)
-                or not isinstance(self.max_reschedules, int)
-                or self.max_reschedules < 0
-            )
+        for name, value in (
+            ("max_reschedules", self.max_reschedules),
+            ("max_bookings_per_day", self.max_bookings_per_day),
+            ("max_bookings_per_week", self.max_bookings_per_week),
+            ("max_upcoming_bookings", self.max_upcoming_bookings),
         ):
-            raise ValueError("max_reschedules must be a non-negative integer or None.")
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, int)
+                or value < 0
+            ):
+                raise ValueError(
+                    f"{name} must be a non-negative integer or None."
+                )
+
+        if (
+            isinstance(self.min_gap_between_bookings, bool)
+            or not isinstance(self.min_gap_between_bookings, timedelta)
+            or self.min_gap_between_bookings < timedelta(0)
+        ):
+            raise ValueError(
+                "min_gap_between_bookings must be a non-negative timedelta."
+            )
 
         object.__setattr__(self, "blocked_periods", tuple(self.blocked_periods))
 
