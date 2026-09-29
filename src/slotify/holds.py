@@ -81,7 +81,7 @@ class InMemoryHoldStore:
 
     @staticmethod
     def _overlaps(hold: BookingHold, booking: Booking) -> bool:
-        hold_resources = set(hold.resource_ids)
+        hold_resources = set(hold.resource_ids or (hold.resource_id,))
         booking_resources = set(booking.effective_resource_ids)
         if not hold_resources.intersection(booking_resources):
             return False
