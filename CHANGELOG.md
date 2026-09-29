@@ -7,6 +7,7 @@
 - Added iCalendar export through Booking.to_ics().
 - Added upcoming_available() to AvailabilityEngine.
 - Expanded v0.2.0 test coverage.
+- Updated PyPI-facing documentation and examples.
 
 # Changelog
 
