@@ -39,11 +39,14 @@ nav:
       - Examples: examples.md
   - Integrations:
       - Django / DRF: django.md
+      - Framework Examples: framework-examples.md
   - Reference:
       - API Guide: api.md
       - Timezones & DST: timezones.md
   - Production:
       - Testing & Production: testing.md
+      - Database-backed Stores: database-stores.md
+      - Performance Benchmarks: benchmarks.md
       - FAQ: faq.md
       - Changelog: changelog.md
       - Migrating from v0.2/v0.3: migration.md
