@@ -1,18 +1,33 @@
 # Getting Started
 
+This page gets you from **zero to a working appointment backend**.
+
+The fastest path is:
+
+1. install Slotify
+2. define working hours
+3. generate slots
+4. add an availability engine
+5. reserve a slot
+6. add the rules your application actually needs
+
+You do **not** need Django, a database, or a frontend to learn the core API.
+
 ## 1. Install
 
 ~~~bash
 pip install slotify-scheduling
 ~~~
 
-Verify the installation:
+Check the installed version:
 
 ~~~bash
 python -c "import slotify; print(slotify.__version__)"
 ~~~
 
-## 2. Generate your first slots
+## 2. Your first working scheduler
+
+Start with one provider who works from 9:00 to 17:00 and accepts 30-minute appointments.
 
 ~~~python
 from slotify import SlotGenerator
@@ -24,13 +39,48 @@ generator = SlotGenerator(
     timezone="Asia/Kolkata",
 )
 
-slots = generator.generate("2026-09-21")
+slots = generator.generate("2026-10-05")
 
-for slot in slots:
+for slot in slots[:3]:
     print(slot.start, "->", slot.end)
 ~~~
 
-## 3. Use a weekly schedule
+The important idea is:
+
+**SlotGenerator creates possible slots. It does not know whether somebody has already booked them.**
+
+## 3. Make the slots bookable
+
+Use AvailabilityEngine when your application needs bookings, capacity, resources, policies, or conflicts.
+
+~~~python
+from slotify import AvailabilityEngine
+
+engine = AvailabilityEngine(
+    generator,
+    resource_id="provider-123",
+    capacity=1,
+)
+
+available = engine.available_slots("2026-10-05")
+
+booking = engine.reserve(available[0])
+
+print(booking.booking_id)
+~~~
+
+Trying to reserve the same slot again raises BookingConflictError.
+
+~~~python
+from slotify import BookingConflictError
+
+try:
+    engine.reserve(available[0])
+except BookingConflictError:
+    print("Someone already booked this slot.")
+~~~
+
+## 4. Build a realistic weekly schedule
 
 ~~~python
 from slotify import Schedule, SlotGenerator
@@ -52,25 +102,6 @@ generator = SlotGenerator(
 )
 ~~~
 
-## 4. Add exceptions
-
-~~~python
-schedule = Schedule(
-    weekly={
-        "monday": [("09:00", "17:00")],
-        "friday": [("09:00", "17:00")],
-    },
-    overrides={
-        "2026-09-21": [("13:00", "18:00")],
-        "2026-09-28": [],
-    },
-    closed_dates=["2026-10-02"],
-    annual_closed_dates=["12-25", "01-01"],
-)
-~~~
-
-An empty override closes the date.
-
 ## 5. Add breaks
 
 ~~~python
@@ -83,36 +114,112 @@ generator = SlotGenerator(
 )
 ~~~
 
-## 6. Generate upcoming availability
+## 6. Add holidays and one-off changes
 
 ~~~python
-from datetime import datetime
-
-slots = generator.upcoming(
-    7,
-    now=datetime.fromisoformat("2026-09-21T08:00:00+05:30"),
+schedule = Schedule(
+    weekly={"monday": [("09:00", "17:00")]},
+    overrides={
+        "2026-10-12": [("13:00", "18:00")],
+        "2026-10-19": [],
+    },
+    closed_dates=["2026-10-02"],
 )
 ~~~
 
-Passing `now` explicitly is useful for deterministic tests.
+An empty override closes that date.
 
-## 7. Add booking
+## 7. Add booking rules
 
 ~~~python
-from slotify import AvailabilityEngine
+from datetime import timedelta
+from slotify import BookingPolicy
+
+policy = BookingPolicy(
+    minimum_notice=timedelta(hours=2),
+    maximum_horizon=timedelta(days=30),
+    cancellation_window=timedelta(hours=12),
+)
 
 engine = AvailabilityEngine(
     generator,
     resource_id="provider-123",
-    capacity=1,
+    policy=policy,
+)
+~~~
+
+## 8. Add a resource pool
+
+If a customer can be served by **any one** of several providers, use a pool.
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_pool=("doctor-1", "doctor-2", "doctor-3"),
+    resource_strategy="least_loaded",
 )
 
-available = engine.available_slots("2026-09-21")
+booking = engine.reserve(
+    generator.generate_for_date("2026-10-05")[0]
+)
 
-if available:
-    booking = engine.reserve(available[0])
-    print(booking.booking_id)
+print(booking.resource_id)
 ~~~
+
+Available strategies:
+
+- first_available — use the configured order
+- round_robin — rotate through resources
+- least_loaded — prefer the resource with the fewest overlapping bookings
+
+## 9. Hold a slot during checkout
+
+Temporary holds are useful when a customer selects a slot and needs time to complete payment.
+
+~~~python
+from datetime import datetime
+
+hold = engine.hold(
+    slot,
+    expires_at=datetime.fromisoformat("2026-10-05T09:10:00+05:30"),
+    now=datetime.fromisoformat("2026-10-05T09:00:00+05:30"),
+)
+
+booking = engine.confirm_hold(
+    hold.hold_id,
+    now=datetime.fromisoformat("2026-10-05T09:05:00+05:30"),
+)
+~~~
+
+Release it when checkout is abandoned:
+
+~~~python
+engine.release_hold(hold.hold_id)
+~~~
+
+An expired hold stops blocking availability automatically in the included in-memory hold store.
+
+For distributed production systems, implement HoldStore using the same database/concurrency guarantees as your booking store.
+
+## 10. Recurring appointments
+
+~~~python
+from slotify import RecurrenceRule
+
+template = generator.generate_for_date("2026-10-05")[0]
+
+series = engine.reserve_recurring(
+    template,
+    RecurrenceRule(
+        weekdays=(0,),
+        count=8,
+    ),
+)
+~~~
+
+Daily, weekly, monthly, and yearly recurrence are supported.
+
+## 11. Cancel and reschedule
 
 Cancel:
 
@@ -120,70 +227,114 @@ Cancel:
 engine.cancel(booking.booking_id)
 ~~~
 
-## Mental model
-
-- **Schedule** — when is the resource normally available?
-- **SlotGenerator** — what appointment slots exist?
-- **AvailabilityEngine** — which generated slots can currently be booked?
-- **BookingPolicy** — which booking times are restricted?
-- **Booking** — what reservation was created?
-
-## Production architecture
-
-Your application should own users, permissions, payments, notifications, and durable application data.
-
-Slotify should provide the scheduling/availability layer.
-
-For multi-process deployments, use a database-backed `BookingStore` rather than treating `InMemoryBookingStore` as shared durable state.
-
-
-## 8. Recurring bookings
-
-Create a weekly appointment series:
+Reschedule:
 
 ~~~python
-from slotify import RecurrenceRule
+new_slot = generator.generate_for_date("2026-10-06")[2]
 
-rule = RecurrenceRule(
-    weekdays=(0,),
-    count=8,
-)
-
-bookings = engine.reserve_recurring(
-    slots[0],
-    rule,
-)
-~~~
-
-## 9. Reschedule
-
-Move an existing booking while keeping its booking ID:
-
-~~~python
-new_booking = engine.reschedule(
+booking = engine.reschedule(
     booking.booking_id,
     new_slot,
 )
 ~~~
 
-## 10. Multiple resources
+## 12. Build an API around it
 
-Use multiple resources when one appointment needs more than one resource:
+A typical Django/DRF flow is:
 
-~~~python
-engine = AvailabilityEngine(
-    generator,
-    resource_ids=("doctor-1", "room-1"),
-)
+~~~text
+GET /providers/123/availability
+        |
+        v
+Load provider configuration
+        |
+        v
+Create SlotGenerator
+        |
+        v
+Create AvailabilityEngine
+        |
+        v
+engine.available_slots(...)
+        |
+        v
+Return JSON to frontend
+        |
+        v
+User chooses a slot
+        |
+        v
+POST /bookings
+        |
+        v
+engine.reserve(slot)
+        |
+        +--> BookingConflictError
+        |    retry/show another slot
+        |
+        +--> Booking
 ~~~
 
-## 11. Calendar export
+See [Django / DRF](django.md) for an application example.
 
-Export a booking as an iCalendar event:
+## 13. Production storage
 
-~~~python
-ics_text = booking.to_ics(
-    summary="Consultation",
-    location="Room 1",
-)
+The included InMemoryBookingStore and InMemoryHoldStore are useful for learning, tests, prototypes, and simple single-process applications.
+
+Do **not** treat them as a shared database for multiple workers.
+
+For a real multi-worker deployment, implement BookingStore and HoldStore against your database. The final reservation must be atomic so competing requests cannot both win the same capacity.
+
+See [Testing & Production](testing.md).
+
+## Mental model
+
+~~~text
+Schedule
+   ↓
+SlotGenerator
+   ↓
+AvailabilityEngine
+   ↓
+Booking / Hold
 ~~~
+
+### Schedule
+
+Defines when a resource normally works and its exceptions.
+
+### SlotGenerator
+
+Turns those rules into concrete time slots.
+
+### AvailabilityEngine
+
+Applies current bookings, capacity, resources, policies, holds, and conflicts.
+
+### Booking / Hold
+
+Represents a confirmed reservation or temporary checkout reservation.
+
+## What Slotify does not own
+
+Keep these concerns in your application:
+
+- users and authentication
+- permissions
+- customer records
+- payments
+- emails/SMS/WhatsApp
+- frontend/UI
+- your main database models
+- business-specific reporting
+
+## Where to go next
+
+- [Concepts](concepts.md)
+- [Configuration](configuration.md)
+- [Availability & Booking](booking.md)
+- [Recipes](recipes.md)
+- [Django / DRF](django.md)
+- [Timezone & DST](timezones.md)
+- [Testing & Production](testing.md)
+- [API Guide](api.md)
