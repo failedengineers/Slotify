@@ -728,9 +728,6 @@ class AvailabilityEngine:
         generator = self._generator_for(schedule_name)
         current = self._current(now, generator)
 
-        self.policy.validate(slot, now=current)
-        self._validate_limits(slot, now=current)
-
         if idempotency_key is not None:
             if not isinstance(idempotency_key, str) or not idempotency_key.strip():
                 raise ValueError("idempotency_key must be a non-empty string or None.")
@@ -738,7 +735,14 @@ class AvailabilityEngine:
             if finder is not None:
                 existing = finder(idempotency_key)
                 if existing is not None:
+                    if existing.slot != slot:
+                        raise BookingConflictError(
+                            "The idempotency key is already associated with a different slot."
+                        )
                     return existing
+
+        self.policy.validate(slot, now=current)
+        self._validate_limits(slot, now=current)
 
         if self.resource_pool:
             last_error: BookingConflictError | None = None
@@ -778,14 +782,6 @@ class AvailabilityEngine:
                 "No resource in the resource pool is available."
             ) from last_error
 
-        if idempotency_key is not None:
-            if not isinstance(idempotency_key, str) or not idempotency_key.strip():
-                raise ValueError("idempotency_key must be a non-empty string or None.")
-            finder = getattr(self.store, "find_by_idempotency_key", None)
-            if finder is not None:
-                existing = finder(idempotency_key)
-                if existing is not None:
-                    return existing
         booking = self._booking_for(
             slot,
             metadata=metadata,
