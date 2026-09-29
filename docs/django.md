@@ -1,32 +1,37 @@
-# Django Integration
+# Django / DRF Integration
 
-Slotify works as a scheduling layer inside Django and Django REST Framework. It does not need to be added to `INSTALLED_APPS`.
+Slotify is a scheduling library, not a Django app. You do not need to add slotify to INSTALLED_APPS.
 
 ## Install
 
 ~~~bash
-pip install slotify-scheduling
+python -m pip install slotify-scheduling
 ~~~
 
-## Example model
+## Recommended architecture
+
+~~~text
+Django models -> service layer -> SlotGenerator -> AvailabilityEngine -> Django/DRF API
+~~~
+
+Keep provider and business data in Django. Create Slotify objects in a service layer so scheduling rules are not duplicated across views.
+
+## Example provider model
 
 ~~~python
 from django.db import models
 
 class Provider(models.Model):
     name = models.CharField(max_length=200)
+    timezone = models.CharField(max_length=64, default="Asia/Kolkata")
     work_start = models.TimeField()
     work_end = models.TimeField()
     slot_duration = models.PositiveIntegerField(default=30)
-    timezone = models.CharField(
-        max_length=64,
-        default="Asia/Kolkata",
-    )
 ~~~
 
-Your database remains the source of truth for provider/application data.
+Store the provider timezone explicitly.
 
-## Service layer
+## Build an engine
 
 ~~~python
 from slotify import AvailabilityEngine, SlotGenerator
@@ -38,7 +43,6 @@ def get_provider_engine(provider):
         duration=provider.slot_duration,
         timezone=provider.timezone,
     )
-
     return AvailabilityEngine(
         generator,
         resource_id=str(provider.pk),
@@ -46,20 +50,22 @@ def get_provider_engine(provider):
     )
 ~~~
 
-Keeping this in a service module prevents scheduling code from being duplicated across views.
-
 ## Django JSON endpoint
 
 ~~~python
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from .models import Provider
 from .services import get_provider_engine
 
 def available_slots(request, provider_id):
-    provider = Provider.objects.get(pk=provider_id)
-    engine = get_provider_engine(provider)
+    try:
+        provider = Provider.objects.get(pk=provider_id)
+    except Provider.DoesNotExist:
+        raise Http404
 
-    slots = engine.available_slots("2026-09-21")
+    engine = get_provider_engine(provider)
+    date_value = request.GET.get("date", "2026-10-05")
+    slots = engine.available_slots(date_value)
 
     return JsonResponse({
         "provider_id": provider.pk,
@@ -67,12 +73,13 @@ def available_slots(request, provider_id):
     })
 ~~~
 
+A production endpoint should validate incoming dates and authenticate requests where required.
+
 ## Django REST Framework
 
 ~~~python
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from .models import Provider
 from .services import get_provider_engine
 
@@ -80,58 +87,70 @@ class ProviderAvailabilityView(APIView):
     def get(self, request, provider_id):
         provider = Provider.objects.get(pk=provider_id)
         engine = get_provider_engine(provider)
-
-        slots = engine.available_slots("2026-09-21")
-
+        date_value = request.query_params.get("date", "2026-10-05")
+        slots = engine.available_slots(date_value)
         return Response({
             "provider_id": provider.pk,
             "slots": [slot.to_dict() for slot in slots],
         })
 ~~~
 
-## Booking workflow
-
-A real application commonly looks like:
+## Typical booking API
 
 ~~~text
-Frontend
-   |
-   v
-Django / DRF
-   |
-   +--> authenticate user
-   |
-   +--> load provider/resource
-   |
-   +--> ask Slotify for availability
-   |
-   +--> user selects a slot
-   |
-   +--> application booking transaction
-   |
-   +--> payment (if required)
-   |
-   +--> notification
+GET  /providers/<id>/availability?date=2026-10-05
+POST /providers/<id>/bookings
+POST /bookings/<id>/cancel
+POST /bookings/<id>/reschedule
 ~~~
 
-Slotify handles scheduling concerns. Django remains responsible for application concerns.
+The exact URLs are your application's responsibility.
 
-## Production storage
+## Booking request flow
 
-The built-in `InMemoryBookingStore` is useful for tests and simple single-process applications.
+1. Authenticate the user.
+2. Load the provider/resource.
+3. Reconstruct the scheduling engine.
+4. Identify the requested slot.
+5. Call reserve().
+6. Persist application-specific booking/customer data.
+7. Trigger payment or notification logic if required.
 
-For multi-worker or distributed Django deployments, implement/use a `BookingStore` backed by your transactional database and make the application-level reservation workflow safe under concurrent requests.
+Do not trust a price, provider, or authorization decision supplied only by the client.
 
-Do not use in-memory state as the shared source of truth across multiple workers.
+## Django database storage
 
-## A useful provider pattern
+Your Django application can keep a booking model containing fields such as:
 
-Store the provider's timezone explicitly rather than assuming the server timezone:
-
-~~~python
-Provider(
-    timezone="Asia/Kolkata",
-)
+~~~text
+id
+customer
+provider
+slot_start
+slot_end
+status
+slotify_booking_id
+metadata
+created_at
 ~~~
 
-Then pass that timezone into `SlotGenerator`.
+The application database should remain the source of truth for durable business records.
+
+## Production BookingStore
+
+For multiple workers, implement BookingStore using your transactional database. The important operations are reserve(), cancel(), reschedule(), get(), list(), and available_capacity(). The database implementation must handle concurrent reservations atomically.
+
+## In-memory store warning
+
+InMemoryBookingStore is thread-safe inside one Python process. It is not shared between multiple Gunicorn workers, containers, servers, or separate processes. Use durable storage for those deployments.
+
+## API response example
+
+~~~json
+{
+  "start": "2026-10-05T09:00:00+05:30",
+  "end": "2026-10-05T09:30:00+05:30",
+  "duration_seconds": 1800,
+  "timezone": "Asia/Kolkata"
+}
+~~~
