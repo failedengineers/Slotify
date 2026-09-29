@@ -46,7 +46,7 @@ def test_multi_resource_hold_confirm_preserves_resource_requirements():
     )
     booking = engine.confirm_hold(hold.hold_id, now=now)
     assert booking.resource_ids == ("room", "therapist")
-    assert booking.resource_id == "room"
+    assert booking.resource_id is None
 
 
 def test_unscoped_hold_still_works():
