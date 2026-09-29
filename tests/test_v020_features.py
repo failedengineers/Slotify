@@ -151,6 +151,6 @@ def test_reserve_recurring_rolls_back_on_conflict():
             now=now,
         )
 
-    assert store.list() == [
-        store.get(store.list()[0].booking_id)
-    ]
+    remaining = store.list()
+    assert len(remaining) == 1
+    assert remaining[0].slot.start.date().isoformat() == "2026-09-28"
