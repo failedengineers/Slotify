@@ -1,6 +1,6 @@
 # Migrating to v0.4.0
 
-Version 0.2.0 adds booking features while keeping the core slot-generation model.
+Version 0.4.0 builds on the booking model with temporary holds, resource-pool allocation strategies, and clearer application-facing APIs.
 
 ## Existing slot generation
 
