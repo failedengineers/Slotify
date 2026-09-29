@@ -393,6 +393,8 @@ class AvailabilityEngine:
         if self.resource_pool:
             for resource_id in self._ordered_pool_resources(slot):
                 candidate = self._candidate(slot, resource_id=resource_id)
+                if self.hold_store.conflicts(candidate, now=now):
+                    continue
                 if (
                     self.store.available_capacity(
                         candidate,
