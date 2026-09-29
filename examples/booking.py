@@ -1,4 +1,6 @@
-from slotify import AvailabilityEngine, SlotGenerator
+from datetime import datetime
+
+from slotify import AvailabilityEngine, BookingConflictError, SlotGenerator
 
 generator = SlotGenerator(
     start="09:00",
@@ -13,11 +15,16 @@ engine = AvailabilityEngine(
     capacity=1,
 )
 
-available = engine.available_slots("2026-09-21")
+now = datetime.fromisoformat("2026-10-04T08:00:00+05:30")
+slot = generator.generate_for_date("2026-10-05")[0]
 
-if available:
-    booking = engine.reserve(available[0])
-    print("Booked:", booking.booking_id)
+booking = engine.reserve(slot, now=now)
+print("Booked:", booking.booking_id)
 
-    engine.cancel(booking.booking_id)
-    print("Cancelled")
+try:
+    engine.reserve(slot, now=now)
+except BookingConflictError:
+    print("Second booking rejected")
+
+engine.cancel(booking.booking_id, now=now)
+print("Cancelled")
