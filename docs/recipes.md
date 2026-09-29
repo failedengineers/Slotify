@@ -125,3 +125,58 @@ policy = BookingPolicy(
     ),
 )
 ~~~
+
+
+## Recurring appointments
+
+~~~python
+from slotify import RecurrenceRule
+
+rule = RecurrenceRule(
+    weekdays=(0,),
+    count=8,
+)
+
+bookings = engine.reserve_recurring(
+    template_slot,
+    rule,
+)
+~~~
+
+If one occurrence cannot be booked, Slotify rolls back occurrences already created by that series.
+
+## Rescheduling
+
+~~~python
+booking = engine.reschedule(
+    booking.booking_id,
+    new_slot,
+)
+~~~
+
+Rescheduling keeps the same booking ID and increments rescheduled_count.
+
+## Multiple resources
+
+Use multiple resources when an appointment requires more than one resource, such as a doctor and a room.
+
+~~~python
+engine = AvailabilityEngine(
+    generator,
+    resource_ids=("doctor-1", "room-1"),
+)
+~~~
+
+Two bookings conflict when their protected intervals overlap and they share at least one resource.
+
+## Calendar export
+
+~~~python
+ics = booking.to_ics(
+    summary="Consultation",
+    description="Patient consultation",
+    location="Room 1",
+)
+~~~
+
+Write the returned text to an .ics file or return it from your web application.

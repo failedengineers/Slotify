@@ -73,6 +73,16 @@ resource_id
 
 Represents a reservation and its protected time interval.
 
+## RecurrenceRule
+
+Defines weekly recurring appointment series with weekdays, interval, count, or an end date.
+
+~~~python
+RecurrenceRule(weekdays=(0, 2), count=6, interval=1)
+~~~
+
+count and until are mutually exclusive.
+
 ## BookingPolicy
 
 Defines booking restrictions such as:
@@ -112,6 +122,14 @@ SlotUnavailableError
 BookingConflictError
 BookingNotFoundError
 ~~~
+
+## iCalendar export
+
+~~~python
+ics_text = booking.to_ics(summary="Doctor Appointment")
+~~~
+
+Exports a single booking as an iCalendar event without a runtime dependency.
 
 ## Timezone helpers
 

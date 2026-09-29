@@ -1,3 +1,13 @@
+## 0.2.0
+
+- Added recurring weekly appointment series with rollback on failed occurrence.
+- Added cancellation and rescheduling policies.
+- Added booking rescheduling with stable booking IDs and reschedule counts.
+- Added multi-resource bookings for appointments requiring shared resources.
+- Added iCalendar export through Booking.to_ics().
+- Added upcoming_available() to AvailabilityEngine.
+- Expanded v0.2.0 test coverage.
+
 # Changelog
 
 ## 0.1.2

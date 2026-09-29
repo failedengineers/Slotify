@@ -160,6 +160,10 @@ slots = generator.upcoming(
 
 Passing now explicitly makes tests deterministic.
 
+### Recurring bookings, rescheduling and resources
+
+Recurring appointment series, cancellation/rescheduling rules, multi-resource bookings, and iCalendar export are available in v0.2.0.
+
 ### Booking and capacity
 
 ~~~python
@@ -332,7 +336,7 @@ Your Django/FastAPI/etc. application
 
 ## Project status
 
-Current version: **0.1.2**
+Current version: **0.2.0**
 
 Slotify is currently in alpha. The API may evolve before 1.0.0, so pin the version in production applications and review the changelog when upgrading.
 
