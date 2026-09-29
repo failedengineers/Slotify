@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from uuid import uuid4
 from .booking import Booking, BookingStore, InMemoryBookingStore
 from .exceptions import BookingConflictError, SlotUnavailableError
 from .generator import SlotGenerator
 from .models import Slot
 from .policy import BookingPolicy
+from .recurrence import RecurrenceRule
 
 
 class AvailabilityEngine:
@@ -232,6 +234,63 @@ class AvailabilityEngine:
             )
 
         return self.store.reschedule(booking_id, new_slot)
+
+    def reserve_recurring(
+        self,
+        template_slot: Slot,
+        rule: RecurrenceRule,
+        *,
+        metadata=None,
+        now: datetime | None = None,
+        series_id: str | None = None,
+    ) -> list[Booking]:
+        """
+        Reserve a recurring series using the same local start time and duration.
+
+        If any occurrence cannot be reserved, already-created occurrences
+        are cancelled before the error is re-raised.
+        """
+        series = series_id or str(uuid4())
+        local_start = template_slot.start.astimezone(
+            self.generator.timezone
+        )
+        local_time = local_start.timetz().replace(tzinfo=None)
+        duration = template_slot.duration
+        created: list[Booking] = []
+
+        for occurrence_date in rule.occurrences(local_start.date()):
+            candidates = [
+                slot
+                for slot in self.generator.generate_for_date(occurrence_date)
+                if (
+                    slot.start.astimezone(self.generator.timezone).time()
+                    == local_time
+                    and slot.duration == duration
+                )
+            ]
+
+            if not candidates:
+                for booking in created:
+                    self.store.cancel(booking.booking_id)
+                raise SlotUnavailableError(
+                    f"No matching slot exists for {occurrence_date.isoformat()}."
+                )
+
+            try:
+                booking = self.reserve(
+                    candidates[0],
+                    metadata=metadata,
+                    now=now,
+                    series_id=series,
+                )
+            except Exception:
+                for existing in created:
+                    self.store.cancel(existing.booking_id)
+                raise
+
+            created.append(booking)
+
+        return created
 
     def upcoming_available(
         self,
