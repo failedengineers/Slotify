@@ -1,3 +1,22 @@
+# Changelog
+
+## 0.5.0
+
+- Added external BusyPeriod conflicts for calendar/application-provided busy intervals.
+- Added machine-readable AvailabilityResult diagnostic codes.
+- Added idempotency keys for retried reservations.
+- Prevented direct non-pool reservations from bypassing active holds.
+- Added database-backed BookingStore guidance and framework integration patterns.
+- Added performance benchmark guidance.
+- Expanded documentation for required multi-resource availability.
+
+## 0.4.0
+
+- Added temporary booking holds and hold storage abstractions.
+- Added first-available, round-robin, and least-loaded resource allocation.
+- Added hold and resource-pool regression coverage.
+- Added runnable examples for holds and resource pools.
+
 ## 0.2.0
 
 - Added recurring weekly appointment series with rollback on failed occurrence.
