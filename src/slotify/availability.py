@@ -666,6 +666,7 @@ class AvailabilityEngine:
         if expires_at <= current:
             raise ValueError("expires_at must be in the future.")
         self.policy.validate(slot, now=current)
+        self._validate_limits(slot, now=current)
         if self.resource_pool:
             for resource_id in self._ordered_pool_resources(slot):
                 candidate = self._candidate(slot, resource_id=resource_id)
@@ -697,6 +698,8 @@ class AvailabilityEngine:
         """Convert an active hold into a confirmed booking."""
         current = self._current(now, self.generator)
         hold = self.hold_store.get(hold_id, now=current)
+        self.policy.validate(hold.slot, now=current)
+        self._validate_limits(hold.slot, now=current)
         booking = self._candidate(
             hold.slot,
             resource_id=hold.resource_id,
@@ -725,9 +728,6 @@ class AvailabilityEngine:
         generator = self._generator_for(schedule_name)
         current = self._current(now, generator)
 
-        self.policy.validate(slot, now=current)
-        self._validate_limits(slot, now=current)
-
         if idempotency_key is not None:
             if not isinstance(idempotency_key, str) or not idempotency_key.strip():
                 raise ValueError("idempotency_key must be a non-empty string or None.")
@@ -735,7 +735,14 @@ class AvailabilityEngine:
             if finder is not None:
                 existing = finder(idempotency_key)
                 if existing is not None:
+                    if existing.slot != slot:
+                        raise BookingConflictError(
+                            "The idempotency key is already associated with a different slot."
+                        )
                     return existing
+
+        self.policy.validate(slot, now=current)
+        self._validate_limits(slot, now=current)
 
         if self.resource_pool:
             last_error: BookingConflictError | None = None
@@ -775,14 +782,6 @@ class AvailabilityEngine:
                 "No resource in the resource pool is available."
             ) from last_error
 
-        if idempotency_key is not None:
-            if not isinstance(idempotency_key, str) or not idempotency_key.strip():
-                raise ValueError("idempotency_key must be a non-empty string or None.")
-            finder = getattr(self.store, "find_by_idempotency_key", None)
-            if finder is not None:
-                existing = finder(idempotency_key)
-                if existing is not None:
-                    return existing
         booking = self._booking_for(
             slot,
             metadata=metadata,
@@ -876,6 +875,11 @@ class AvailabilityEngine:
         self._validate_limits(new_slot, now=current)
 
         candidate = booking.reschedule(new_slot)
+
+        if self.hold_store.conflicts(candidate, now=current):
+            raise BookingConflictError(
+                "The requested interval is temporarily held."
+            )
 
         available = self.store.available_capacity(
             candidate,
