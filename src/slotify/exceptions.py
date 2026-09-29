@@ -38,3 +38,10 @@ class BookingNotFoundError(BookingError):
 
 class SlotUnavailableError(SlotifyError):
     """Raised when a slot cannot currently be booked."""
+
+class HoldNotFoundError(BookingError):
+    """Raised when a requested booking hold does not exist."""
+
+
+class HoldExpiredError(SlotUnavailableError):
+    """Raised when a booking hold has expired or is no longer active."""

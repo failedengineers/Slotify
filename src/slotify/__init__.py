@@ -1,6 +1,8 @@
 from .exceptions import (
     BookingConflictError,
     BookingNotFoundError,
+    HoldExpiredError,
+    HoldNotFoundError,
     ConfigurationError,
     DSTTransitionError,
     InvalidDateRangeError,
@@ -13,6 +15,7 @@ from .exceptions import (
 from .schedule import Schedule
 
 from .availability import AvailabilityEngine, AvailabilityResult
+from .holds import BookingHold, HoldStore, InMemoryHoldStore
 from .booking import (
     Booking,
     BookingStore,
@@ -55,6 +58,11 @@ __all__ = [
     "SlotUnavailableError",
     "BookingConflictError",
     "BookingNotFoundError",
+    "BookingHold",
+    "HoldStore",
+    "InMemoryHoldStore",
+    "HoldExpiredError",
+    "HoldNotFoundError",
     "get_timezone",
     "to_utc",
     "convert_timezone",

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slotify-scheduling"
-version = "0.3.0"
+version = "0.4.0"
 description = "Timezone-aware Python scheduling and appointment slot engine for availability and booking systems."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -44,7 +44,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/failedengineers/Slotify"
-Documentation = "https://failedengineers.github.io/Slotify/"
+Documentation = "https://slotify-scheduling.ilovelabfile.in/"
 Repository = "https://github.com/failedengineers/Slotify"
 Issues = "https://github.com/failedengineers/Slotify/issues"
 Changelog = "https://github.com/failedengineers/Slotify/blob/main/CHANGELOG.md"
