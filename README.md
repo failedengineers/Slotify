@@ -434,7 +434,7 @@ RecurrenceRule(
 
 ## Project status
 
-Current version: **0.3.0**
+Current version: **0.5.0**
 
 Slotify is currently in alpha. The API may evolve before 1.0.0, so pin the version in production applications and review the changelog when upgrading.
 
@@ -445,3 +445,28 @@ MIT License
 ## Author
 
 Kalash Gulati
+
+
+### External calendar conflicts
+
+Normalize conflicts from an external calendar in your application and pass them to BookingPolicy:
+
+~~~python
+from slotify import BookingPolicy, BusyPeriod
+
+policy = BookingPolicy(
+    busy_periods=(
+        BusyPeriod(start=calendar_start, end=calendar_end, reason="External event"),
+    ),
+)
+~~~
+
+### Idempotent API retries
+
+Use an idempotency key for requests that may be retried:
+
+~~~python
+booking = engine.reserve(slot, idempotency_key=request_id)
+~~~
+
+A production BookingStore should enforce the same key atomically in its database.
