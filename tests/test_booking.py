@@ -327,7 +327,7 @@ def test_concurrent_booking_allows_only_one_when_capacity_is_one():
     )
 
     slot = engine.generator.generate_for_date(
-        "2026-09-21"
+        "2026-10-21"
     )[0]
 
     def attempt():
