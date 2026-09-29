@@ -281,6 +281,53 @@ RecurrenceRule(
 weekdays is valid for weekly recurrence. day_of_month is used for monthly/yearly recurrence. When a monthly day does not exist in a month, the last valid day of that month is used. count counts emitted occurrences, so excluded dates do not consume the count.
 
 
+## v0.5.0 external busy periods
+
+Use BusyPeriod for conflicts supplied by another calendar or application:
+
+~~~python
+from slotify import BookingPolicy, BusyPeriod
+
+policy = BookingPolicy(
+    busy_periods=(
+        BusyPeriod(
+            start=calendar_start,
+            end=calendar_end,
+            reason="External calendar event",
+        ),
+    ),
+)
+~~~
+
+Busy periods are evaluated alongside Slotify's own booking rules.
+
+## v0.5.0 availability diagnostics
+
+AvailabilityResult includes a machine-readable code in addition to the human-readable reason.
+
+Common codes include:
+
+~~~text
+available
+policy
+hold_conflict
+capacity_conflict
+resource_unavailable
+~~~
+
+## v0.5.0 idempotent reservations
+
+Pass an idempotency key when an API request may be retried:
+
+~~~python
+booking = engine.reserve(
+    slot,
+    idempotency_key="payment-attempt-123",
+)
+~~~
+
+A store should enforce idempotency atomically in production.
+
 ## v0.4.0 holds
 
 Temporary checkout holds are represented by BookingHold.
